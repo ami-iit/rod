@@ -54,6 +54,106 @@ pip install git+https://github.com/ami-iit/rod
 [pip]: https://github.com/pypa/pip/
 [venv]: https://docs.python.org/3.8/tutorial/venv.html
 
+## Examples
+
+<details>
+<summary>Serialize and deserialize SDF files</summary>
+
+```python
+import pathlib
+
+from rod import Sdf
+
+# Supported SDF resources
+sdf_resource_1 = "/path/to/file.sdf"
+sdf_resource_2 = pathlib.Path(sdf_resource_1)
+sdf_resource_3 = sdf_resource_2.read_text()
+
+# Deserialize SDF resources
+sdf_1 = Sdf.load(sdf=sdf_resource_1)
+sdf_2 = Sdf.load(sdf=sdf_resource_2)
+sdf_3 = Sdf.load(sdf=sdf_resource_3)
+
+# Serialize in-memory Sdf object
+print(sdf_3.serialize(pretty=True))
+```
+
+</details>
+
+<details>
+<summary>Create SDF models programmatically</summary>
+
+```python
+from rod import Axis, Inertia, Inertial, Joint, Limit, Link, Model, Sdf, Xyz
+
+sdf = Sdf(
+    version="1.7",
+    model=Model(
+        name="my_model",
+        link=[
+            Link(name="base_link", inertial=Inertial(mass=1.0, inertia=Inertia())),
+            Link(name="my_link", inertial=Inertial(mass=0.5, inertia=Inertia())),
+        ],
+        joint=Joint(
+            name="base_to_my_link",
+            type="revolute",
+            parent="base_link",
+            child="my_link",
+            axis=Axis(xyz=Xyz(xyz=[0, 0, 1]), limit=Limit(lower=-3.13, upper=3.14)),
+        ),
+    ),
+)
+
+print(sdf.serialize(pretty=True))
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<sdf version="1.7">
+  <model name="my_model">
+    <link name="base_link">
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>1.0</ixx>
+          <iyy>1.0</iyy>
+          <izz>1.0</izz>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <link name="my_link">
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>1.0</ixx>
+          <iyy>1.0</iyy>
+          <izz>1.0</izz>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name="base_to_my_link" type="revolute">
+      <parent>base_link</parent>
+      <child>my_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.13</lower>
+          <upper>3.14</upper>
+        </limit>
+      </axis>
+    </joint>
+  </model>
+</sdf>
+```
+
+</details>
+
 ## Similar projects
 
 - https://github.com/gazebosim/sdformat
