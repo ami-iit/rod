@@ -54,6 +54,14 @@ pip install git+https://github.com/ami-iit/rod
 [pip]: https://github.com/pypa/pip/
 [venv]: https://docs.python.org/3.8/tutorial/venv.html
 
+## Similar projects
+
+- https://github.com/gazebosim/sdformat
+- https://github.com/mmatl/urdfpy
+- https://github.com/clemense/yourdfpy
+- https://github.com/ros/urdf_parser_py
+- https://github.com/FirefoxMetzger/python-sdformat/
+
 ## Contributing
 
 Pull requests are welcome. 
