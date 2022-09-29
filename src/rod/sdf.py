@@ -65,3 +65,9 @@ class Sdf(Element):
             raise RuntimeError("Failed to find top-level '<sdf>' element")
 
         return Sdf.from_dict(sdf_dict)
+
+    def serialize(self, pretty: bool = False, indent: str = "  "):
+
+        return xmltodict.unparse(
+            input_dict=dict(sdf=self.to_dict()), pretty=pretty, indent=indent
+        )
