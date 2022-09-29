@@ -3,6 +3,8 @@ import pathlib
 from typing import List, Optional, Union
 
 import mashumaro
+import packaging.specifiers
+import packaging.version
 import xmltodict
 
 from .element import Element
@@ -64,7 +66,13 @@ class Sdf(Element):
         except KeyError:
             raise RuntimeError("Failed to find top-level '<sdf>' element")
 
-        return Sdf.from_dict(sdf_dict)
+        sdf = Sdf.from_dict(sdf_dict)
+        sdf_version = packaging.version.Version(sdf_dict["@version"])
+
+        if sdf_version not in packaging.specifiers.SpecifierSet(">= 1.7"):
+            raise RuntimeError(f"Unsupported SDF version: {sdf_version}")
+
+        return sdf
 
     def serialize(self, pretty: bool = False, indent: str = "  "):
 
