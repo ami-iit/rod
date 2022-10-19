@@ -1,6 +1,6 @@
 from . import logging
 from .collision import Collision
-from .common import Pose, Xyz
+from .common import Frame, Pose, Xyz
 from .geometry import (
     Box,
     Capsule,

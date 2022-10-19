@@ -70,3 +70,15 @@ class Pose(Element):
     @property
     def rpy(self) -> List[float]:
         return self.pose[3:6]
+
+
+@dataclasses.dataclass
+class Frame(Element):
+
+    name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
+
+    attached_to: Optional[str] = dataclasses.field(
+        default=None, metadata=mashumaro.field_options(alias="@attached_to")
+    )
+
+    pose: Optional[Pose] = dataclasses.field(default=None)
