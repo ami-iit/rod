@@ -105,3 +105,25 @@ class Link(Element):
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
+
+    def visuals(self) -> List[Visual]:
+
+        if self.visual is None:
+            return []
+
+        if isinstance(self.visual, Visual):
+            return [self.visual]
+
+        assert isinstance(self.visual, list), type(self.visual)
+        return self.visual
+
+    def collisions(self) -> List[Collision]:
+
+        if self.collision is None:
+            return []
+
+        if isinstance(self.collision, Collision):
+            return [self.collision]
+
+        assert isinstance(self.collision, list), type(self.collision)
+        return self.collision

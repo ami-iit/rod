@@ -59,3 +59,47 @@ class Model(Element):
     link: Optional[Union[Link, List[Link]]] = dataclasses.field(default=None)
 
     joint: Optional[Union[Joint, List[Joint]]] = dataclasses.field(default=None)
+
+    def models(self) -> List["Model"]:
+
+        if self.model is None:
+            return []
+
+        if isinstance(self.model, Model):
+            return [self.model]
+
+        assert isinstance(self.model, list)
+        return self.model
+
+    def frames(self) -> List[Frame]:
+
+        if self.frame is None:
+            return []
+
+        if isinstance(self.frame, Frame):
+            return [self.frame]
+
+        assert isinstance(self.frame, list)
+        return self.frame
+
+    def links(self) -> List[Link]:
+
+        if self.link is None:
+            return []
+
+        if isinstance(self.link, Link):
+            return [self.link]
+
+        assert isinstance(self.link, list), type(self.link)
+        return self.link
+
+    def joints(self) -> List[Joint]:
+
+        if self.joint is None:
+            return []
+
+        if isinstance(self.joint, Joint):
+            return [self.joint]
+
+        assert isinstance(self.joint, list), type(self.joint)
+        return self.joint

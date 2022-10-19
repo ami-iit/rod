@@ -25,6 +25,28 @@ class Sdf(Element):
 
     model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
 
+    def worlds(self) -> List[World]:
+
+        if self.world is None:
+            return []
+
+        if isinstance(self.world, World):
+            return [self.world]
+
+        assert isinstance(self.world, list), type(self.world)
+        return self.world
+
+    def models(self) -> List[Model]:
+
+        if self.model is None:
+            return []
+
+        if isinstance(self.model, Model):
+            return [self.model]
+
+        assert isinstance(self.model, list), type(self.model)
+        return self.model
+
     @staticmethod
     def load(sdf: Union[pathlib.Path, str], is_urdf: Optional[bool] = None) -> "Sdf":
         """
