@@ -38,3 +38,25 @@ class World(Element):
     model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
 
     frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
+
+    def models(self) -> List[Model]:
+
+        if self.model is None:
+            return []
+
+        if isinstance(self.model, Model):
+            return [self.model]
+
+        assert isinstance(self.model, list)
+        return self.model
+
+    def frames(self) -> List[Frame]:
+
+        if self.frame is None:
+            return []
+
+        if isinstance(self.frame, Frame):
+            return [self.frame]
+
+        assert isinstance(self.frame, list)
+        return self.frame
