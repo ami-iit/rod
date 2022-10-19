@@ -3,6 +3,8 @@ from typing import List, Optional, Union
 
 import mashumaro
 
+from rod import logging
+
 from .common import Frame, Pose
 from .element import Element
 from .joint import Joint
@@ -66,6 +68,20 @@ class Model(Element):
         assert len(joints_having_world_parent) in {0, 1}
 
         return len(joints_having_world_parent) > 0
+
+    def get_canonical_link(self) -> str:
+
+        if len(self.models()) != 0:
+            msg = "Model composition is not yet supported."
+            msg += " The returned canonical link could be wrong."
+            logging.warning(msg=msg)
+
+        if self.canonical_link is not None:
+
+            assert self.canonical_link in {l.name for l in self.links()}
+            return self.canonical_link
+
+        return self.links()[0].name
 
     def models(self) -> List["Model"]:
 
