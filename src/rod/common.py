@@ -83,7 +83,7 @@ class Pose(Element):
         DCM = R.from_euler(
             seq="xyz",
             angles=self.rpy,
-            degrees=self.degrees if self.degrees is not None else False,
+            degrees=self.degrees if self.degrees is True else False,
         ).as_matrix()
 
         return np.block(
@@ -101,7 +101,7 @@ class Pose(Element):
 
         from scipy.spatial.transform import Rotation as R
 
-        xyz = list(transform[0:3, 3])
+        xyz = list(transform[0:3, 3].squeeze())
         rpy = list(R.from_matrix(transform[0:3, 0:3]).as_euler(seq="xyz"))
 
         return Pose(pose=xyz + rpy, relative_to=relative_to)
