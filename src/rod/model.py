@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 
 import mashumaro
 
-from .common import Pose
+from .common import Frame, Pose
 from .element import Element
 from .joint import Joint
 from .link import Link
@@ -53,6 +53,8 @@ class Model(Element):
     pose: Optional[Pose] = dataclasses.field(default=None)
 
     model: Optional[Union["Model", List["Model"]]] = dataclasses.field(default=None)
+
+    frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
 
     link: Optional[Union[Link, List[Link]]] = dataclasses.field(default=None)
 

@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import mashumaro.mixins.dict
 
+from .common import Frame
 from .element import Element
 from .model import Model
 from .physics import Physics
@@ -35,3 +36,5 @@ class World(Element):
     scene: Scene = dataclasses.field(default_factory=Scene)
 
     model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
+
+    frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
