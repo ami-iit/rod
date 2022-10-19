@@ -60,6 +60,13 @@ class Model(Element):
 
     joint: Optional[Union[Joint, List[Joint]]] = dataclasses.field(default=None)
 
+    def is_fixed_base(self) -> bool:
+
+        joints_having_world_parent = [j for j in self.joints() if j.parent == "world"]
+        assert len(joints_having_world_parent) in {0, 1}
+
+        return len(joints_having_world_parent) > 0
+
     def models(self) -> List["Model"]:
 
         if self.model is None:
