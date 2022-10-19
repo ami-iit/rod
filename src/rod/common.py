@@ -2,6 +2,7 @@ import dataclasses
 from typing import Any, Dict, List, Optional
 
 import mashumaro
+import numpy.typing as npt
 
 from .element import Element
 
@@ -70,6 +71,40 @@ class Pose(Element):
     @property
     def rpy(self) -> List[float]:
         return self.pose[3:6]
+
+    def transform(self) -> npt.NDArray:
+
+        import numpy as np
+        from scipy.spatial.transform import Rotation as R
+
+        # Transform Euler angles to DCM matrix.
+        # The rpy sequence included in URDF and SDF implements the x-y-z Tait-Bryan
+        # angles using the extrinsic convention (w.r.t. a fixed frame).
+        DCM = R.from_euler(
+            seq="xyz",
+            angles=self.rpy,
+            degrees=self.degrees if self.degrees is not None else False,
+        ).as_matrix()
+
+        return np.block(
+            [
+                [DCM, np.vstack(self.xyz)],
+                [0, 0, 0, 1.0],
+            ]
+        )
+
+    @staticmethod
+    def from_transform(transform: npt.NDArray, relative_to: str = None) -> "Pose":
+
+        if transform.shape != (4, 4):
+            raise ValueError(transform.shape)
+
+        from scipy.spatial.transform import Rotation as R
+
+        xyz = list(transform[0:3, 3])
+        rpy = list(R.from_matrix(transform[0:3, 0:3]).as_euler(seq="xyz"))
+
+        return Pose(pose=xyz + rpy, relative_to=relative_to)
 
 
 @dataclasses.dataclass
