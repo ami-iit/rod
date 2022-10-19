@@ -1,3 +1,4 @@
+from . import logging
 from .collision import Collision
 from .common import Pose, Xyz
 from .geometry import (
