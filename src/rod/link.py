@@ -2,6 +2,8 @@ import dataclasses
 from typing import List, Optional, Union
 
 import mashumaro
+import numpy as np
+import numpy.typing as npt
 
 from .collision import Collision
 from .common import Pose
@@ -41,6 +43,16 @@ class Inertia(Element):
         default=0.0,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
+
+    def matrix(self) -> npt.NDArray:
+
+        return np.array(
+            [
+                [self.ixx, self.ixy, self.ixz],
+                [self.ixy, self.iyy, self.iyz],
+                [self.ixz, self.iyz, self.izz],
+            ]
+        )
 
 
 @dataclasses.dataclass
