@@ -126,3 +126,13 @@ class Model(Element):
 
         assert isinstance(self.joint, list), type(self.joint)
         return self.joint
+
+    def resolve_frames(
+        self, is_top_level: bool = True, explicit_frames: bool = True
+    ) -> None:
+
+        from rod.utils import resolve_frames
+
+        resolve_frames.resolve_model_frames(
+            model=self, is_top_level=is_top_level, explicit_frames=explicit_frames
+        )
