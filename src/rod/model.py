@@ -9,6 +9,7 @@ from .common import Frame, Pose
 from .element import Element
 from .joint import Joint
 from .link import Link
+from .utils.frame_convention import FrameConvention
 
 
 @dataclasses.dataclass
@@ -126,3 +127,30 @@ class Model(Element):
 
         assert isinstance(self.joint, list), type(self.joint)
         return self.joint
+
+    def resolve_frames(
+        self, is_top_level: bool = True, explicit_frames: bool = True
+    ) -> None:
+
+        from rod.utils import resolve_frames
+
+        resolve_frames.resolve_model_frames(
+            model=self, is_top_level=is_top_level, explicit_frames=explicit_frames
+        )
+
+    def switch_frame_convention(
+        self,
+        frame_convention: FrameConvention,
+        is_top_level: bool = True,
+        explicit_frames: bool = True,
+    ) -> None:
+
+        from rod.utils.frame_convention import switch_frame_convention
+
+        switch_frame_convention(
+            model=self,
+            frame_convention=frame_convention,
+            is_top_level=is_top_level,
+        )
+
+        self.resolve_frames(is_top_level=is_top_level, explicit_frames=explicit_frames)
