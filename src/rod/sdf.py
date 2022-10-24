@@ -1,9 +1,6 @@
 import dataclasses
 import os
 import pathlib
-import shutil
-import subprocess
-import tempfile
 from typing import List, Optional, Union
 
 import mashumaro
@@ -13,6 +10,7 @@ import xmltodict
 
 from .element import Element
 from .model import Model
+from .utils.gazebo import GazeboHelper
 from .world import World
 
 
@@ -96,8 +94,8 @@ class Sdf(Element):
         # Convert SDF to URDF if needed (it requires system executables)
         if is_urdf:
             urdf_string = sdf_string
-            sdf_string = Sdf._urdf_string_to_sdf_string(
-                urdf_string=urdf_string, gazebo_executable=Sdf._get_gazebo_executable()
+            sdf_string = GazeboHelper.process_model_description_with_sdformat(
+                model_description=urdf_string
             )
 
         # Parse the SDF to dict
@@ -122,57 +120,20 @@ class Sdf(Element):
 
         return sdf
 
-    def serialize(self, pretty: bool = False, indent: str = "  "):
+    def serialize(
+        self, pretty: bool = False, indent: str = "  ", validate: Optional[bool] = None
+    ) -> str:
+
+        # Automatically detect suitable Gazebo version
+        validate = validate if validate is not None else GazeboHelper.has_gazebo()
+
+        if validate:
+            _ = GazeboHelper.process_model_description_with_sdformat(
+                model_description=xmltodict.unparse(
+                    input_dict=dict(sdf=self.to_dict()), pretty=True, indent="  "
+                )
+            )
 
         return xmltodict.unparse(
             input_dict=dict(sdf=self.to_dict()), pretty=pretty, indent=indent
         )
-
-    @staticmethod
-    def _urdf_string_to_sdf_string(
-        urdf_string: str, gazebo_executable: pathlib.Path
-    ) -> str:
-
-        with tempfile.NamedTemporaryFile(mode="w+") as fp:
-
-            fp.write(urdf_string)
-            fp.seek(0)
-
-            cp = subprocess.run(
-                [str(gazebo_executable), "sdf", "-p", fp.name],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-
-        if cp.returncode != 0:
-            print(cp.stdout)
-            raise RuntimeError("Failed to convert URDF to SDF")
-
-        return cp.stdout
-
-    @staticmethod
-    def _get_gazebo_executable() -> pathlib.Path:
-
-        gz = shutil.which("gz")
-        ign = shutil.which("ign")
-
-        # Check if either Gazebo Sim or Ignition Gazebo are installed
-        if gz is not None:
-            executable = pathlib.Path(shutil.which("gz"))
-        elif ign is not None:
-            executable = pathlib.Path(shutil.which("ign"))
-        else:
-            msg = "Failed to find either the 'gz' or 'ign' executables in PATH"
-            raise FileNotFoundError(msg)
-
-        assert executable.is_file()
-
-        # Check if the sdf plugin of the simulator is installed
-        cp = subprocess.run([executable, "sdf", "--help"], capture_output=True)
-
-        if cp.returncode != 0:
-            msg = f"Failed to find 'sdf' command part of {executable} installation"
-            raise RuntimeError(msg)
-
-        return executable
