@@ -280,7 +280,7 @@ class KinematicTree(DirectedTree):
             new_node = dataclasses.replace(replaced_node, parent=removed_node.parent)
 
         # Check if a link has non-trivial inertial parameters
-        def has_zero_inertial(link: Union[rod.common.Element, rod.Link]) -> bool:
+        def has_zero_inertial(link: rod.Link) -> bool:
 
             if not isinstance(link, rod.Link):
                 return True

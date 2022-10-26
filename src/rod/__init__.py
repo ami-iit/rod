@@ -1,7 +1,7 @@
 from . import logging
-from .collision import Collision
-from .common import Frame, Pose, Xyz
-from .geometry import (
+from .sdf.collision import Collision
+from .sdf.common import Frame, Pose, Xyz
+from .sdf.geometry import (
     Box,
     Capsule,
     Cylinder,
@@ -12,15 +12,15 @@ from .geometry import (
     Plane,
     Sphere,
 )
-from .joint import Axis, Dynamics, Joint, Limit
-from .link import Inertia, Inertial, Link
-from .material import Material
-from .model import Model
-from .physics import Physics
-from .scene import Scene
-from .sdf import Sdf
-from .visual import Visual
-from .world import World
+from .sdf.joint import Axis, Dynamics, Joint, Limit
+from .sdf.link import Inertia, Inertial, Link
+from .sdf.material import Material
+from .sdf.model import Model
+from .sdf.physics import Physics
+from .sdf.scene import Scene
+from .sdf.sdf import Sdf
+from .sdf.visual import Visual
+from .sdf.world import World
 
 
 def _is_editable():

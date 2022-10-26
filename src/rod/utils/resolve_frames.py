@@ -4,7 +4,7 @@ from typing import List, Union
 import numpy as np
 
 import rod
-from rod.element import Element
+from rod.sdf.element import Element
 
 
 def update_element_with_pose(

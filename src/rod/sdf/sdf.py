@@ -8,9 +8,10 @@ import packaging.specifiers
 import packaging.version
 import xmltodict
 
+from rod.utils.gazebo import GazeboHelper
+
 from .element import Element
 from .model import Model
-from .utils.gazebo import GazeboHelper
 from .world import World
 
 

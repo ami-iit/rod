@@ -5,7 +5,7 @@ import mashumaro.config
 import mashumaro.mixins.dict
 import numpy as np
 
-from .pretty_printer import DataclassPrettyPrinter
+from rod.pretty_printer import DataclassPrettyPrinter
 
 
 @dataclasses.dataclass

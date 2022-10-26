@@ -4,12 +4,12 @@ from typing import List, Optional, Union
 import mashumaro
 
 from rod import logging
+from rod.utils.frame_convention import FrameConvention
 
 from .common import Frame, Pose
 from .element import Element
 from .joint import Joint
 from .link import Link
-from .utils.frame_convention import FrameConvention
 
 
 @dataclasses.dataclass
