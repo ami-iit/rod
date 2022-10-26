@@ -21,6 +21,7 @@ from .sdf.scene import Scene
 from .sdf.sdf import Sdf
 from .sdf.visual import Visual
 from .sdf.world import World
+from .utils.frame_convention import FrameConvention
 
 
 def _is_editable():

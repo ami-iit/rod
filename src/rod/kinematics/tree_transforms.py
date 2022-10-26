@@ -5,9 +5,9 @@ import numpy as np
 import numpy.typing as npt
 
 import rod
+from rod import FrameConvention
 from rod.kinematics.kinematic_tree import KinematicTree
 from rod.tree import TreeFrame
-from rod.utils.frame_convention import FrameConvention
 
 
 @dataclasses.dataclass

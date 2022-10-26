@@ -3,8 +3,7 @@ from typing import List, Optional, Union
 
 import mashumaro
 
-from rod import logging
-from rod.utils.frame_convention import FrameConvention
+from rod import FrameConvention, logging
 
 from .common import Frame, Pose
 from .element import Element
