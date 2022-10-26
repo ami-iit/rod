@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List, Optional, Union
 
-import mashumaro.mixins.dict
+import mashumaro
 
 from .common import Frame
 from .element import Element
