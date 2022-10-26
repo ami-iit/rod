@@ -36,12 +36,12 @@ class DirectedTreeNode(TreeElement):
     parent: Optional["DirectedTreeNode"] = None
     children: List["DirectedTreeNode"] = dataclasses.field(default_factory=list)
 
-    _source: Optional[rod.Link] = dataclasses.field(default=None, repr=False)
+    _source: Optional["rod.Link"] = dataclasses.field(default=None, repr=False)
 
     def name(self) -> str:
         return self._source.name
 
-    def pose(self) -> rod.Pose:
+    def pose(self) -> "rod.Pose":
 
         if self._source is not None and self._source.pose is not None:
             return self._source.pose
@@ -77,7 +77,7 @@ class TreeEdge(TreeElement):
 
     _source: Optional[rod.Joint] = dataclasses.field(default=None, repr=False)
 
-    def pose(self) -> rod.Pose:
+    def pose(self) -> "rod.Pose":
 
         return self._source.pose
 
@@ -99,7 +99,7 @@ class TreeFrame(TreeElement):
     WORLD: ClassVar[str] = "world"
     MODEL: ClassVar[str] = "__model__"
 
-    _source: Optional[rod.Frame] = dataclasses.field(default=None, repr=False)
+    _source: Optional["rod.Frame"] = dataclasses.field(default=None, repr=False)
 
     def name(self) -> str:
         return self._source.name

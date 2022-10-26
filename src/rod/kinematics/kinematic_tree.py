@@ -13,7 +13,7 @@ from rod.tree import DirectedTree, DirectedTreeNode, TreeEdge, TreeFrame
 @dataclasses.dataclass(frozen=True)
 class KinematicTree(DirectedTree):
 
-    model: rod.Model
+    model: "rod.Model"
 
     joints: List[TreeEdge] = dataclasses.field(default_factory=list)
     frames: List[TreeFrame] = dataclasses.field(default_factory=list)
@@ -48,7 +48,7 @@ class KinematicTree(DirectedTree):
         return [joint.name() for joint in self.joints]
 
     @staticmethod
-    def build(model: rod.Model, is_top_level: bool = True) -> "KinematicTree":
+    def build(model: "rod.Model", is_top_level: bool = True) -> "KinematicTree":
 
         logging.debug(msg=f"Building kinematic tree of model '{model.name}'")
 

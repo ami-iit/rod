@@ -17,7 +17,7 @@ class TreeTransforms:
 
     @staticmethod
     def build(
-        model: rod.Model,
+        model: "rod.Model",
         is_top_level: bool = True,
         prevent_switching_frame_convention: bool = False,
     ) -> "TreeTransforms":
