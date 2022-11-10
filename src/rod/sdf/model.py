@@ -3,7 +3,8 @@ from typing import List, Optional, Union
 
 import mashumaro
 
-from rod import FrameConvention, logging
+import rod
+from rod import logging
 
 from .common import Frame, Pose
 from .element import Element
@@ -139,7 +140,7 @@ class Model(Element):
 
     def switch_frame_convention(
         self,
-        frame_convention: FrameConvention,
+        frame_convention: "rod.FrameConvention",
         is_top_level: bool = True,
         explicit_frames: bool = True,
     ) -> None:

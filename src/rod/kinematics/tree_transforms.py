@@ -5,7 +5,6 @@ import numpy as np
 import numpy.typing as npt
 
 import rod
-from rod import FrameConvention
 from rod.kinematics.kinematic_tree import KinematicTree
 from rod.tree import TreeFrame
 
@@ -27,7 +26,7 @@ class TreeTransforms:
         model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
 
         if not prevent_switching_frame_convention:
-            model.switch_frame_convention(frame_convention=FrameConvention.Urdf)
+            model.switch_frame_convention(frame_convention=rod.FrameConvention.Urdf)
 
         return TreeTransforms(
             kinematic_tree=KinematicTree.build(model=model, is_top_level=is_top_level)
