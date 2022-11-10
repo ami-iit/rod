@@ -136,5 +136,8 @@ class Sdf(Element):
             )
 
         return xmltodict.unparse(
-            input_dict=dict(sdf=self.to_dict()), pretty=pretty, indent=indent
+            input_dict=dict(sdf=self.to_dict()),
+            pretty=pretty,
+            indent=indent,
+            short_empty_elements=True,
         )
