@@ -103,7 +103,7 @@ jobs:
           github.repository == 'ami-iit/rod' &&
           ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
            (github.event_name == 'release'))
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
