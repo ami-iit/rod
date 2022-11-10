@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import dataclasses
 import functools
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union
@@ -7,7 +7,7 @@ from .tree_elements import DirectedTreeNode
 
 
 @dataclasses.dataclass(frozen=True)
-class DirectedTree(collections.Sequence):
+class DirectedTree(collections.abc.Sequence):
 
     root: DirectedTreeNode
 
