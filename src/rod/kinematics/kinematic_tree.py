@@ -279,6 +279,17 @@ class KinematicTree(DirectedTree):
             replaced_node = edge.child
             new_node = dataclasses.replace(replaced_node, parent=removed_node.parent)
 
+        # Convert the removed edge to frame
+        removed_edge_as_frame = TreeFrame.from_edge(edge=edge, attached_to=new_node)
+
+        # Convert the removed node as frame
+        removed_node_as_frame = TreeFrame.from_node(
+            node=removed_node, attached_to=removed_edge_as_frame
+        )
+
+        # Create a list with all new frames resulting from the edge removal process
+        new_frames = [removed_node_as_frame, removed_edge_as_frame]
+
         # Check if a link has non-trivial inertial parameters
         def has_zero_inertial(link: rod.Link) -> bool:
 
