@@ -6,7 +6,6 @@ from rod import logging
 
 
 class FrameConvention(enum.IntEnum):
-
     Model = enum.auto()
     Sdf = enum.auto()
     Urdf = enum.auto()
@@ -16,7 +15,6 @@ class FrameConvention(enum.IntEnum):
 def switch_frame_convention(
     model: "rod.Model", frame_convention: FrameConvention, is_top_level: bool = True
 ) -> None:
-
     # Resolve all implicit reference frames using Sdf convention
     model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
 
@@ -25,7 +23,6 @@ def switch_frame_convention(
     # =============================================================
 
     if frame_convention is FrameConvention.World:
-
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: "world"
         reference_frame_frames = lambda f: "world"
@@ -35,7 +32,6 @@ def switch_frame_convention(
         reference_frame_collisions = lambda c: "world"
 
     elif frame_convention is FrameConvention.Model:
-
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: "__model__"
         reference_frame_frames = lambda f: "__model__"
@@ -45,7 +41,6 @@ def switch_frame_convention(
         reference_frame_collisions = lambda c: "__model__"
 
     elif frame_convention is FrameConvention.Sdf:
-
         visual_name_to_parent_link = {
             visual_name: parent_link
             for d in [{v.name: link for v in link.visuals()} for link in model.links()]
@@ -71,7 +66,6 @@ def switch_frame_convention(
         ].name
 
     elif frame_convention is FrameConvention.Urdf:
-
         visual_name_to_parent_link = {
             visual_name: parent_link
             for d in [{v.name: link for v in link.visuals()} for link in model.links()]
@@ -122,7 +116,6 @@ def switch_frame_convention(
     else:
         # Adjust the reference frame of the sub-model
         if model.pose.relative_to != reference_frame_model:
-
             x_H_model = model.pose.transform()
             target_H_x = kin.relative_transform(
                 relative_to=reference_frame_model(m=model),
@@ -136,7 +129,6 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all sub-models
     for sub_model in model.models():
-
         logging.info(
             "Model composition not yet supported, ignoring '{}/{}'".format(
                 model.name, sub_model.name
@@ -145,7 +137,6 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all joints
     for joint in model.joints():
-
         x_H_joint = joint.pose.transform()
         target_H_x = kin.relative_transform(
             relative_to=reference_frame_joints(j=joint),
@@ -159,8 +150,8 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all frames
     for frame in model.frames():
-
         x_H_frame = frame.pose.transform()
+
         target_H_x = kin.relative_transform(
             relative_to=reference_frame_frames(f=frame),
             name=frame.pose.relative_to,
@@ -173,7 +164,6 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all links
     for link in model.links():
-
         if link.name != model.get_canonical_link():
             relative_to = reference_frame_links(l=link)
         else:
@@ -208,7 +198,6 @@ def switch_frame_convention(
 
         # Visuals pose
         for visual in link.visuals():
-
             x_H_visual = visual.pose.transform()
             target_H_x = kin.relative_transform(
                 relative_to=reference_frame_visuals(v=visual),
@@ -222,7 +211,6 @@ def switch_frame_convention(
 
         # Collisions pose
         for collision in link.collisions():
-
             x_H_collision = collision.pose.transform()
             target_H_x = kin.relative_transform(
                 relative_to=reference_frame_collisions(c=collision),

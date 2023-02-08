@@ -10,7 +10,6 @@ from rod.sdf.element import Element
 def update_element_with_pose(
     element: Element, default_relative_to: Union[str, List[str]], explicit_frames: bool
 ) -> None:
-
     if not hasattr(element, "pose"):
         raise ValueError("The input element has no 'pose' attribute")
 
@@ -27,7 +26,6 @@ def update_element_with_pose(
 
     # Either add a new pose if there is any, or specify the reference frame if missing
     if explicit_frames:
-
         # Add trivial pose
         if element.pose is None:
             element.pose = rod.Pose(
@@ -41,11 +39,9 @@ def update_element_with_pose(
 
     # Remove the reference frame if the element has a pose wrt the default choice
     else:
-
         if element.pose is not None and element.pose.relative_to in {"", None}.union(
             default_relative_to
         ):
-
             # Remove trivial pose
             if np.allclose(element.pose.pose, np.zeros(6)):
                 element.pose = None
@@ -58,7 +54,6 @@ def update_element_with_pose(
 def resolve_model_frames(
     model: "rod.Model", is_top_level: bool = True, explicit_frames: bool = True
 ) -> None:
-
     # Close the helper for compactness
     update_element = functools.partial(
         update_element_with_pose, explicit_frames=explicit_frames
@@ -75,7 +70,6 @@ def resolve_model_frames(
 
     # Update the links and its children elements
     for link in model.links():
-
         update_element(element=link, default_relative_to=["__model__", model.name])
 
         update_element(element=link.inertial, default_relative_to=link.name)

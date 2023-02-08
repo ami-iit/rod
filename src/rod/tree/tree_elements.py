@@ -7,7 +7,6 @@ from rod import logging
 
 
 class TreeElement(abc.ABC):
-
     index: Optional[int] = dataclasses.field(default=None, init=False)
 
     @abc.abstractmethod
@@ -19,20 +18,17 @@ class TreeElement(abc.ABC):
         pass
 
     def __eq__(self, other) -> bool:
-
         if not isinstance(other, type(self)):
             return False
 
         return self.name() == other.name()
 
     def __hash__(self):
-
         return hash(str(type(self)) + self.name())
 
 
 @dataclasses.dataclass(eq=False)
 class DirectedTreeNode(TreeElement):
-
     parent: Optional["DirectedTreeNode"] = None
     children: List["DirectedTreeNode"] = dataclasses.field(default_factory=list)
 
@@ -42,7 +38,6 @@ class DirectedTreeNode(TreeElement):
         return self._source.name
 
     def pose(self) -> "rod.Pose":
-
         if self._source is not None and self._source.pose is not None:
             return self._source.pose
         else:
@@ -50,7 +45,6 @@ class DirectedTreeNode(TreeElement):
 
     @property
     def tree_label(self) -> str:
-
         return (
             f"#{self.index}_<{self.name()}>"
             if self.index is not None
@@ -58,7 +52,6 @@ class DirectedTreeNode(TreeElement):
         )
 
     def __str__(self) -> str:
-
         content_string = "name={}, index={}, parent={}, children={}".format(
             self.name(),
             self.index,
@@ -71,21 +64,18 @@ class DirectedTreeNode(TreeElement):
 
 @dataclasses.dataclass(eq=False)
 class TreeEdge(TreeElement):
-
     child: DirectedTreeNode
     parent: DirectedTreeNode
 
     _source: Optional[rod.Joint] = dataclasses.field(default=None, repr=False)
 
     def pose(self) -> "rod.Pose":
-
         return self._source.pose
 
     def name(self) -> str:
         return self._source.name
 
     def __str__(self) -> str:
-
         content_string = "name={}, parent={}, child={}".format(
             self.name(), self.parent, self.child
         )
@@ -95,7 +85,6 @@ class TreeEdge(TreeElement):
 
 @dataclasses.dataclass(eq=False)
 class TreeFrame(TreeElement):
-
     WORLD: ClassVar[str] = "world"
     MODEL: ClassVar[str] = "__model__"
 
@@ -111,7 +100,6 @@ class TreeFrame(TreeElement):
         return self._source.pose
 
     def __str__(self) -> str:
-
         content_string = "name={}, index={}, attached_to={}".format(
             self.name(), self.index, self.attached_to()
         )
@@ -123,7 +111,6 @@ class TreeFrame(TreeElement):
         node: DirectedTreeNode,
         attached_to: Union[DirectedTreeNode, "TreeFrame", TreeEdge] = None,
     ) -> "TreeFrame":
-
         attached_to = attached_to if attached_to is not None else node.parent
 
         logging.debug(
@@ -143,7 +130,6 @@ class TreeFrame(TreeElement):
         edge: TreeEdge,
         attached_to: Union[DirectedTreeNode, "TreeFrame", TreeEdge] = None,
     ) -> "TreeFrame":
-
         attached_to = attached_to if attached_to is not None else edge.parent
 
         logging.debug(

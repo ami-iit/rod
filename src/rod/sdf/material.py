@@ -8,14 +8,12 @@ from .element import Element
 
 @dataclasses.dataclass
 class Script(Element):
-
     name: str
     uri: str = dataclasses.field(default="__default__")
 
 
 @dataclasses.dataclass
 class Material(Element):
-
     script: Optional[Script] = dataclasses.field(default=None)
 
     lightning: Optional[bool] = dataclasses.field(

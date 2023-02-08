@@ -9,7 +9,6 @@ from typing import Union
 class GazeboHelper:
     @staticmethod
     def get_gazebo_executable() -> pathlib.Path:
-
         gz = shutil.which("gz")
         ign = shutil.which("ign")
 
@@ -36,7 +35,6 @@ class GazeboHelper:
 
     @staticmethod
     def has_gazebo() -> bool:
-
         try:
             _ = GazeboHelper.get_gazebo_executable()
             return True
@@ -47,7 +45,6 @@ class GazeboHelper:
     def process_model_description_with_sdformat(
         model_description: Union[str, pathlib.Path]
     ) -> str:
-
         # =============================
         # Select the correct input type
         # =============================
@@ -82,7 +79,6 @@ class GazeboHelper:
         gazebo_executable = GazeboHelper.get_gazebo_executable()
 
         with tempfile.NamedTemporaryFile(mode="w+") as fp:
-
             fp.write(model_description_string)
             fp.seek(0)
 

@@ -8,7 +8,6 @@ from .element import Element
 
 @dataclasses.dataclass
 class Box(Element):
-
     size: List[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
@@ -20,7 +19,6 @@ class Box(Element):
 
 @dataclasses.dataclass
 class Capsule(Element):
-
     radius: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -32,7 +30,6 @@ class Capsule(Element):
 
 @dataclasses.dataclass
 class Cylinder(Element):
-
     radius: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -44,7 +41,6 @@ class Cylinder(Element):
 
 @dataclasses.dataclass
 class Ellipsoid(Element):
-
     radii: List[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
@@ -56,7 +52,6 @@ class Ellipsoid(Element):
 
 @dataclasses.dataclass
 class Heightmap(Element):
-
     uri: str
 
     size: List[float] = dataclasses.field(
@@ -80,7 +75,6 @@ class Heightmap(Element):
 
 @dataclasses.dataclass
 class Mesh(Element):
-
     uri: str
 
     scale: Optional[List[float]] = dataclasses.field(
@@ -94,7 +88,6 @@ class Mesh(Element):
 
 @dataclasses.dataclass
 class Plane(Element):
-
     normal: List[float] = dataclasses.field(
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -113,7 +106,6 @@ class Plane(Element):
 
 @dataclasses.dataclass
 class Sphere(Element):
-
     radius: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -121,7 +113,6 @@ class Sphere(Element):
 
 @dataclasses.dataclass
 class Geometry(Element):
-
     box: Optional[Box] = dataclasses.field(default=None)
     capsule: Optional[Capsule] = dataclasses.field(default=None)
     cylinder: Optional[Capsule] = dataclasses.field(default=None)

@@ -8,7 +8,6 @@ from .element import Element
 
 @dataclasses.dataclass
 class Scene(Element):
-
     ambient: List[float] = dataclasses.field(
         default_factory=lambda: [0.4, 0.4, 0.4, 1],
         metadata=mashumaro.field_options(

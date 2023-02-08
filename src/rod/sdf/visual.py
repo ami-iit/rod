@@ -11,7 +11,6 @@ from .material import Material
 
 @dataclasses.dataclass
 class Visual(Element):
-
     geometry: Geometry
 
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
