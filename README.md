@@ -30,6 +30,7 @@ Last but not least, the pose semantics also makes SDF aware of the concept of _f
 - Type validation of elements and attributes
 - Automatic check of missing required elements
 - Based on [`Fatal1ty/mashumaro`][mashumaro] for great serialization and deserialization performance
+- Support of exporting the in-memory model description to URDF
 
 [mashumaro]: https://github.com/Fatal1ty/mashumaro
 [open_robotics]: https://www.openrobotics.org/
@@ -150,6 +151,53 @@ print(sdf.serialize(pretty=True))
     </joint>
   </model>
 </sdf>
+```
+
+</details>
+
+<details>
+<summary>Exporting SDF to URDF</summary>
+
+```python
+# Generate first the 'sdf' object with the collapsed code
+# of the section 'Create SDF models programmatically'.
+
+from rod.urdf.exporter import UrdfExporter
+
+urdf_string = UrdfExporter.sdf_to_urdf_string(
+    sdf=sdf,
+    pretty=True,
+    gazebo_preserve_fixed_joints=True,
+)
+
+print(urdf_string)
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="my_model">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <link name="my_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.5"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="base_to_my_link" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    <parent link="base_link"/>
+    <child link="my_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="3.4028235e+38" velocity="3.4028235e+38" lower="-3.13" upper="3.14"/>
+  </joint>
+</robot>
 ```
 
 </details>
