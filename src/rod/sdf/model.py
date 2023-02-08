@@ -120,6 +120,20 @@ class Model(Element):
         assert isinstance(self.joint, list), type(self.joint)
         return self.joint
 
+    def add_frame(self, frame: Frame) -> None:
+        if self.frame is None:
+            self.frame = frame
+            return
+
+        frames = self.frame
+
+        if not isinstance(frames, list):
+            assert isinstance(frames, Frame)
+            frames = [frames]
+
+        frames.append(frame)
+        self.frame = frames
+
     def resolve_uris(self) -> None:
         from rod.utils import resolve_uris
 
