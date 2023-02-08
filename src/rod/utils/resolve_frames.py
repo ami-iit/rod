@@ -68,6 +68,9 @@ def resolve_model_frames(
     else:
         update_element(element=model, default_relative_to="world")
 
+    for frame in model.frames():
+        update_element(element=frame, default_relative_to=["__model__", model.name])
+
     # Update the links and its children elements
     for link in model.links():
         update_element(element=link, default_relative_to=["__model__", model.name])
