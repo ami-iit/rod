@@ -1,6 +1,8 @@
 import enum
 from collections import defaultdict
 
+import numpy as np
+
 import rod
 from rod import logging
 
@@ -30,6 +32,7 @@ def switch_frame_convention(
         reference_frame_visuals = lambda v: "world"
         reference_frame_inertials = lambda i, parent_link: "world"
         reference_frame_collisions = lambda c: "world"
+        reference_frame_link_canonical = "world"
 
     elif frame_convention is FrameConvention.Model:
         reference_frame_model = lambda m: "world"
@@ -39,6 +42,7 @@ def switch_frame_convention(
         reference_frame_visuals = lambda v: "__model__"
         reference_frame_inertials = lambda i, parent_link: "__model__"
         reference_frame_collisions = lambda c: "__model__"
+        reference_frame_link_canonical = "__model__"
 
     elif frame_convention is FrameConvention.Sdf:
         visual_name_to_parent_link = {
@@ -64,6 +68,7 @@ def switch_frame_convention(
         reference_frame_collisions = lambda c: collision_name_to_parent_link[
             c.name
         ].name
+        reference_frame_link_canonical = "__model__"
 
     elif frame_convention is FrameConvention.Urdf:
         visual_name_to_parent_link = {
@@ -83,7 +88,13 @@ def switch_frame_convention(
         link_name_to_parent_joint_names = defaultdict(list)
 
         for j in model.joints():
-            link_name_to_parent_joint_names[j.child].append(j.name)
+            if j.child != model.get_canonical_link():
+                link_name_to_parent_joint_names[j.child].append(j.name)
+            else:
+                # The pose of the canonical link is used to define the origin of
+                # the URDF joint connecting the world to the robot
+                assert model.is_fixed_base()
+                link_name_to_parent_joint_names[j.child].append("world")
 
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: link_name_to_parent_joint_names[l.name][0]
@@ -95,6 +106,13 @@ def switch_frame_convention(
             c.name
         ].name
 
+        if model.is_fixed_base():
+            canonical_link = {l.name: l for l in model.links()}[
+                model.get_canonical_link()
+            ]
+            reference_frame_link_canonical = reference_frame_links(l=canonical_link)
+        else:
+            reference_frame_link_canonical = "__model__"
     else:
         raise ValueError(frame_convention)
 
@@ -150,7 +168,7 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all frames
     for frame in model.frames():
-        x_H_frame = frame.pose.transform()
+        x_H_frame = frame.pose.transform() if frame.pose is not None else np.eye(4)
 
         target_H_x = kin.relative_transform(
             relative_to=reference_frame_frames(f=frame),
@@ -164,15 +182,11 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all links
     for link in model.links():
-        if link.name != model.get_canonical_link():
-            relative_to = reference_frame_links(l=link)
-        else:
-            # For fixed-base models, the URDF will also have a world-to-base joint,
-            # whose origin will be the pose of the canonical link of the SDF model.
-            # Instead, for floating-base models, we use __model__ as reference frame
-            # for the canonical link, that in any case must be a trivial pose since
-            # any other transform would not be supported by the URDF specification.
-            relative_to = "world" if model.is_fixed_base() else "__model__"
+        relative_to = (
+            reference_frame_links(l=link)
+            if link.name != model.get_canonical_link()
+            else reference_frame_link_canonical
+        )
 
         # Link pose
         x_H_link = link.pose.transform()
