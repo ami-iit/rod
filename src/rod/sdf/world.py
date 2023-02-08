@@ -12,7 +12,6 @@ from .scene import Scene
 
 @dataclasses.dataclass
 class World(Element):
-
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
     gravity: List[float] = dataclasses.field(
@@ -40,7 +39,6 @@ class World(Element):
     frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
 
     def models(self) -> List[Model]:
-
         if self.model is None:
             return []
 
@@ -51,7 +49,6 @@ class World(Element):
         return self.model
 
     def frames(self) -> List[Frame]:
-
         if self.frame is None:
             return []
 

@@ -9,7 +9,6 @@ from .element import Element
 
 @dataclasses.dataclass
 class Xyz(Element):
-
     xyz: List[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
@@ -25,7 +24,6 @@ class Xyz(Element):
 
     @classmethod
     def __pre_deserialize__(cls, d: Dict[Any, Any]) -> Dict[Any, Any]:
-
         if isinstance(d, str):
             d = {"#text": d, "@expressed_in": ""}
 
@@ -34,7 +32,6 @@ class Xyz(Element):
 
 @dataclasses.dataclass
 class Pose(Element):
-
     pose: List[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
@@ -58,7 +55,6 @@ class Pose(Element):
 
     @classmethod
     def __pre_deserialize__(cls, d: Dict[Any, Any]) -> Dict[Any, Any]:
-
         if isinstance(d, str):
             d = {"#text": d, "@relative_to": ""}
 
@@ -73,7 +69,6 @@ class Pose(Element):
         return self.pose[3:6]
 
     def transform(self) -> npt.NDArray:
-
         import numpy as np
         from scipy.spatial.transform import Rotation as R
 
@@ -95,7 +90,6 @@ class Pose(Element):
 
     @staticmethod
     def from_transform(transform: npt.NDArray, relative_to: str = None) -> "Pose":
-
         if transform.shape != (4, 4):
             raise ValueError(transform.shape)
 
@@ -109,7 +103,6 @@ class Pose(Element):
 
 @dataclasses.dataclass
 class Frame(Element):
-
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
     attached_to: Optional[str] = dataclasses.field(

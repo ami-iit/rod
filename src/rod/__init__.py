@@ -25,7 +25,6 @@ from .utils.frame_convention import FrameConvention
 
 
 def _is_editable():
-
     import importlib.util
     import pathlib
     import site

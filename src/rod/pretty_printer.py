@@ -6,12 +6,10 @@ from typing import Any, List, Tuple
 
 class DataclassPrettyPrinter(abc.ABC):
     def to_string(self) -> str:
-
         return DataclassPrettyPrinter.dataclass_to_str(obj=self, level=1)
 
     @staticmethod
     def list_to_string(obj: List[Any], level: int = 1) -> str:
-
         if not isinstance(obj, list):
             raise TypeError(obj, type(obj))
 
@@ -37,21 +35,18 @@ class DataclassPrettyPrinter(abc.ABC):
 
     @staticmethod
     def dataclass_to_str(obj: Any, level: int = 1) -> str:
-
         if not dataclasses.is_dataclass(obj):
             raise TypeError(obj, type(obj))
 
         serialization: List[Tuple[str, str]] = []
 
         for field in dataclasses.fields(obj):
-
             attr = getattr(obj, field.name)
 
             if attr is None or attr == "":
                 continue
 
             elif isinstance(attr, list):
-
                 list_str = DataclassPrettyPrinter.list_to_string(
                     obj=attr, level=level + 1
                 )
@@ -59,7 +54,6 @@ class DataclassPrettyPrinter(abc.ABC):
                 continue
 
             elif dataclasses.is_dataclass(attr):
-
                 dataclass_str = DataclassPrettyPrinter.dataclass_to_str(
                     obj=attr, level=level + 1
                 )
@@ -67,7 +61,6 @@ class DataclassPrettyPrinter(abc.ABC):
                 continue
 
             else:
-
                 serialization += [(field.name, f"{attr!s}")]
                 continue
 

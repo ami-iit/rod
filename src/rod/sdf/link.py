@@ -13,7 +13,6 @@ from .visual import Visual
 
 @dataclasses.dataclass
 class Inertia(Element):
-
     ixx: float = dataclasses.field(
         default=1.0,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
@@ -45,7 +44,6 @@ class Inertia(Element):
     )
 
     def matrix(self) -> npt.NDArray:
-
         return np.array(
             [
                 [self.ixx, self.ixy, self.ixz],
@@ -57,7 +55,6 @@ class Inertia(Element):
 
 @dataclasses.dataclass
 class Inertial(Element):
-
     mass: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -70,7 +67,6 @@ class Inertial(Element):
 
 @dataclasses.dataclass
 class Link(Element):
-
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
     pose: Optional[Pose] = dataclasses.field(default=None)
@@ -119,7 +115,6 @@ class Link(Element):
     )
 
     def visuals(self) -> List[Visual]:
-
         if self.visual is None:
             return []
 
@@ -130,7 +125,6 @@ class Link(Element):
         return self.visual
 
     def collisions(self) -> List[Collision]:
-
         if self.collision is None:
             return []
 

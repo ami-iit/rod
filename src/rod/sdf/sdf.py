@@ -17,7 +17,6 @@ from .world import World
 
 @dataclasses.dataclass
 class Sdf(Element):
-
     version: str = dataclasses.field(metadata=mashumaro.field_options(alias="@version"))
 
     world: Optional[Union[World, List[World]]] = dataclasses.field(default=None)
@@ -25,7 +24,6 @@ class Sdf(Element):
     model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
 
     def worlds(self) -> List[World]:
-
         if self.world is None:
             return []
 
@@ -36,7 +34,6 @@ class Sdf(Element):
         return self.world
 
     def models(self) -> List[Model]:
-
         if self.model is None:
             return []
 
@@ -124,7 +121,6 @@ class Sdf(Element):
     def serialize(
         self, pretty: bool = False, indent: str = "  ", validate: Optional[bool] = None
     ) -> str:
-
         # Automatically detect suitable Gazebo version
         validate = validate if validate is not None else GazeboHelper.has_gazebo()
 

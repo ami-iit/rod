@@ -11,7 +11,6 @@ from rod.tree import TreeFrame
 
 @dataclasses.dataclass
 class TreeTransforms:
-
     kinematic_tree: KinematicTree = dataclasses.dataclass(init=False)
 
     @staticmethod
@@ -20,7 +19,6 @@ class TreeTransforms:
         is_top_level: bool = True,
         prevent_switching_frame_convention: bool = False,
     ) -> "TreeTransforms":
-
         model = copy.deepcopy(model)
 
         model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
@@ -33,18 +31,15 @@ class TreeTransforms:
         )
 
     def transform(self, name: str) -> npt.NDArray:
-
         if name == TreeFrame.WORLD:
             return np.eye(4)
 
         if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
-
             relative_to = self.kinematic_tree.model.pose.relative_to
             assert relative_to in {None, ""}, (relative_to, name)
             return self.kinematic_tree.model.pose.transform()
 
         if name in self.kinematic_tree.joint_names():
-
             edge = self.kinematic_tree.joints_dict[name]
             assert edge.name() == name
 
@@ -63,7 +58,6 @@ class TreeTransforms:
             name in self.kinematic_tree.link_names()
             or name in self.kinematic_tree.frame_names()
         ):
-
             element = (
                 self.kinematic_tree.links_dict[name]
                 if name in self.kinematic_tree.link_names()
@@ -84,7 +78,6 @@ class TreeTransforms:
         raise ValueError(name)
 
     def relative_transform(self, relative_to: str, name: str) -> npt.NDArray:
-
         return np.linalg.inv(self.transform(name=relative_to)) @ self.transform(
             name=name
         )

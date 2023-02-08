@@ -9,7 +9,6 @@ from .element import Element
 
 @dataclasses.dataclass
 class Limit(Element):
-
     lower: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float)
     )
@@ -41,7 +40,6 @@ class Limit(Element):
 
 @dataclasses.dataclass
 class Dynamics(Element):
-
     spring_reference: float = dataclasses.field(
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -63,7 +61,6 @@ class Dynamics(Element):
 
 @dataclasses.dataclass
 class Axis(Element):
-
     xyz: Xyz
     limit: Limit
     dynamics: Optional[Dynamics] = dataclasses.field(default=None)
@@ -71,7 +68,6 @@ class Axis(Element):
 
 @dataclasses.dataclass
 class Joint(Element):
-
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
     type: str = dataclasses.field(metadata=mashumaro.field_options(alias="@type"))
 

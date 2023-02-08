@@ -12,14 +12,12 @@ from rod.tree import DirectedTree, DirectedTreeNode, TreeEdge, TreeFrame
 
 @dataclasses.dataclass(frozen=True)
 class KinematicTree(DirectedTree):
-
     model: "rod.Model"
 
     joints: List[TreeEdge] = dataclasses.field(default_factory=list)
     frames: List[TreeFrame] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
-
         # Initialize base class
         super().__post_init__()
 
@@ -49,7 +47,6 @@ class KinematicTree(DirectedTree):
 
     @staticmethod
     def build(model: "rod.Model", is_top_level: bool = True) -> "KinematicTree":
-
         logging.debug(msg=f"Building kinematic tree of model '{model.name}'")
 
         if model.model is not None:
@@ -130,7 +127,6 @@ class KinematicTree(DirectedTree):
 
         # Use joints to connect nodes by defining their parent and children
         for joint in model.joints():
-
             if joint.child == TreeFrame.WORLD:
                 msg = f"A joint cannot have '{TreeFrame.WORLD}' as child"
                 raise RuntimeError(msg)
@@ -184,7 +180,6 @@ class KinematicTree(DirectedTree):
         expected_num_extra_joints = 1 if model.is_fixed_base() else 0
 
         if found_num_extra_joints != expected_num_extra_joints:
-
             if model.is_fixed_base() and found_num_extra_joints == 0:
                 raise RuntimeError("Failed to find joint connecting the model to world")
 
@@ -193,7 +188,6 @@ class KinematicTree(DirectedTree):
 
         # Handle connection to world of fixed-base models
         if model.is_fixed_base():
-
             assert len(joints_not_in_tree) == 1
             world_to_base_joint = joints_not_in_tree[0]
 
@@ -227,7 +221,6 @@ class KinematicTree(DirectedTree):
             assert world_node is not None
 
         else:
-
             # Remove the world node from the nodes dictionary since it's unconnected...
             world_node = nodes_links_dict.pop(TreeFrame.WORLD)
 
@@ -260,7 +253,6 @@ class KinematicTree(DirectedTree):
     def remove_edge(
         edge: TreeEdge, keep_parent: bool = True
     ) -> Tuple[DirectedTreeNode, Sequence[TreeFrame]]:
-
         # Removed node: the node to remove.
         # Replaced node: the node removed and replaced with the new node.
         # New node: the new node that combines the removed and replaced nodes.
@@ -292,7 +284,6 @@ class KinematicTree(DirectedTree):
 
         # Check if a link has non-trivial inertial parameters
         def has_zero_inertial(link: rod.Link) -> bool:
-
             if not isinstance(link, rod.Link):
                 return True
 
@@ -319,20 +310,16 @@ class KinematicTree(DirectedTree):
 
     @functools.cached_property
     def links_dict(self) -> Dict[str, DirectedTreeNode]:
-
         return self.nodes_dict
 
     @functools.cached_property
     def frames_dict(self) -> Dict[str, TreeFrame]:
-
         return {frame.name(): frame for frame in self.frames}
 
     @functools.cached_property
     def joints_dict(self) -> Dict[str, TreeEdge]:
-
         return {joint.name(): joint for joint in self.joints}
 
     @functools.cached_property
     def joints_connection_dict(self) -> Dict[Tuple[str, str], TreeEdge]:
-
         return {(j.parent.name(), j.child.name()): j for j in self.joints}
