@@ -120,6 +120,16 @@ class Model(Element):
         assert isinstance(self.joint, list), type(self.joint)
         return self.joint
 
+    def resolve_uris(self) -> None:
+        from rod.utils import resolve_uris
+
+        for link in self.links():
+            for visual in link.visuals():
+                resolve_uris.resolve_geometry_uris(geometry=visual.geometry)
+
+            for collision in link.collisions():
+                resolve_uris.resolve_geometry_uris(geometry=collision.geometry)
+
     def resolve_frames(
         self, is_top_level: bool = True, explicit_frames: bool = True
     ) -> None:
