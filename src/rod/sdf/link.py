@@ -133,3 +133,31 @@ class Link(Element):
 
         assert isinstance(self.collision, list), type(self.collision)
         return self.collision
+
+    def add_visual(self, visual: Visual) -> None:
+        if self.visual is None:
+            self.visual = visual
+            return
+
+        visuals = self.visual
+
+        if not isinstance(visuals, list):
+            assert isinstance(visuals, Visual), type(visuals)
+            visuals = [visuals]
+
+        visuals.append(visual)
+        self.visual = visuals
+
+    def add_collision(self, collision: Collision) -> None:
+        if self.collision is None:
+            self.collision = collision
+            return
+
+        collisions = self.collision
+
+        if not isinstance(collisions, list):
+            assert isinstance(collisions, Collision), type(collisions)
+            collisions = [collisions]
+
+        collisions.append(collision)
+        self.collision = collisions
