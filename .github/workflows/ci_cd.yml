@@ -6,6 +6,10 @@ on:
   release:
     types:
       - published
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # Execute a "nightly" build at 2 AM UTC
+    - cron:  '0 2 * * *'
 
 jobs:
 
@@ -40,6 +44,7 @@ jobs:
         run: twine check dist/*
 
       - name: Upload artifacts
+        if: github.event_name != 'schedule'
         uses: actions/upload-artifact@v3
         with:
           path: dist/*
@@ -85,6 +90,7 @@ jobs:
   publish:
     name: Publish to PyPI
     needs: test
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-22.04
 
     steps:
