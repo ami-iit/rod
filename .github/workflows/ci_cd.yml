@@ -44,7 +44,6 @@ jobs:
         run: twine check dist/*
 
       - name: Upload artifacts
-        if: github.event_name != 'schedule'
         uses: actions/upload-artifact@v3
         with:
           path: dist/*
