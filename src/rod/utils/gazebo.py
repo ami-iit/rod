@@ -93,4 +93,11 @@ class GazeboHelper:
             print(cp.stdout)
             raise RuntimeError("Failed to process the input with sdformat")
 
-        return cp.stdout
+        # Get the resulting SDF string
+        sdf_string = cp.stdout
+
+        # There might be warnings in the output, so we remove them by finding the
+        # first <sdf> tag and ignoring everything before it
+        sdf_string = sdf_string[sdf_string.find("<sdf"):]
+
+        return sdf_string
