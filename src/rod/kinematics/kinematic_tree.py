@@ -113,11 +113,6 @@ class KinematicTree(DirectedTree):
                     pose=model.pose,
                 ),
             ),
-            model.name: TreeFrame(
-                _source=rod.Frame(
-                    name=model.name, attached_to=root_node_name, pose=model.pose
-                )
-            ),
         }
 
         # Check that links and frames have unique names
