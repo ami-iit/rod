@@ -98,6 +98,6 @@ class GazeboHelper:
 
         # There might be warnings in the output, so we remove them by finding the
         # first <sdf> tag and ignoring everything before it
-        sdf_string = sdf_string[sdf_string.find("<sdf"):]
+        sdf_string = sdf_string[sdf_string.find("<sdf") :]
 
         return sdf_string
