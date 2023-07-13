@@ -50,9 +50,12 @@ jobs:
           name: dist
 
   test:
-    name: 'Python${{ matrix.python }}@${{ matrix.os }}'
+    name: 'Python${{ matrix.python }}@${{ matrix.type }}@${{ matrix.os }}'
     needs: package
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
     strategy:
       fail-fast: false
       matrix:
@@ -60,18 +63,63 @@ jobs:
           - ubuntu-22.04
           - macos-latest
           - windows-latest
+        type:
+          - apt
+          - conda
         python:
           - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
+        exclude:
+          - os: macos-latest
+            type: apt
+          - os: windows-latest
+            type: apt
 
     steps:
 
       - name: Set up Python
+        if: matrix.type == 'apt'
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
+
+      - uses: conda-incubator/setup-miniconda@v2
+        if: matrix.type == 'conda'
+        with:
+          python-version: ${{ matrix.python }}
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          channels: conda-forge
+          channel-priority: true
+
+      - name: Install system dependencies
+        if: matrix.type == 'apt'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gazebo
+          # Remove following line as soon as iDynTree is available on Python 3.11:
+          pip install --pre idyntree
+
+      - name: Install conda dependencies
+        if: matrix.type == 'conda'
+        run: |
+          mamba install -y \
+            coloredlogs \
+            mashumaro \
+            numpy \
+            packaging \
+            scipy \
+            xmltodict \
+            black \
+            isort \
+            pptree \
+            idyntree \
+            pytest \
+            robot_descriptions
+            # pytest-icdiff \  # creates problems on macOS
+          mamba install -y gz-sim7 idyntree
 
       - name: Download Python packages
         uses: actions/download-artifact@v3
@@ -79,12 +127,24 @@ jobs:
           path: dist
           name: dist
 
-      - name: Install wheel
-        shell: bash
-        run: pip install dist/*.whl
+      - name: Install wheel (apt)
+        if: matrix.type == 'apt'
+        run: pip install "$(find dist/ -type f -name '*.whl')[all]"
+
+      - name: Install wheel (conda)
+        if: matrix.type == 'conda'
+        run: pip install --no-deps "$(find dist/ -type f -name '*.whl')[all]"
+
+      - name: Pip check
+        run: pip check
 
       - name: Import the package
         run: python -c "import rod"
+
+      - uses: actions/checkout@v3
+
+      - name: Run tests
+        run: pytest
 
   publish:
     name: Publish to PyPI
