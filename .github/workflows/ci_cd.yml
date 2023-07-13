@@ -43,6 +43,11 @@ jobs:
       - name: Run twine check
         run: twine check dist/*
 
+      - name: Check PEP440 compliance
+        run: |
+          pip install packaging setuptools_scm
+          python -c "import packaging.version as v; v.Version(\"$(python -m setuptools_scm)\")"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
