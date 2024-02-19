@@ -21,9 +21,11 @@ class DataclassPrettyPrinter(abc.ABC):
         spacing_level_up = spacing * (level - 1)
 
         list_str = [
-            DataclassPrettyPrinter.dataclass_to_str(obj=el, level=level + 1)
-            if dataclasses.is_dataclass(el)
-            else str(el)
+            (
+                DataclassPrettyPrinter.dataclass_to_str(obj=el, level=level + 1)
+                if dataclasses.is_dataclass(el)
+                else str(el)
+            )
             for el in obj
         ]
 
