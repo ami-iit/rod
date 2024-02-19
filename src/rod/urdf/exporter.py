@@ -13,6 +13,13 @@ from rod.kinematics.tree_transforms import TreeTransforms
 class UrdfExporter(abc.ABC):
     SUPPORTED_SDF_JOINT_TYPES = {"revolute", "continuous", "prismatic", "fixed"}
 
+    DefaultMaterial = {
+        "@name": "default_material",
+        "color": {
+            "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
+        },
+    }
+
     @staticmethod
     def sdf_to_urdf_string(
         sdf: rod.Sdf,
@@ -233,17 +240,9 @@ class UrdfExporter(abc.ABC):
                                 ),
                                 **(
                                     {
-                                        "material": {
-                                            # TODO: add colors logic
-                                            "@name": "white",
-                                            "color": {
-                                                "@rgba": " ".join(
-                                                    np.array([1, 1, 1, 0], dtype=str)
-                                                )
-                                            },
-                                            # TODO: add textures support
-                                            # "texture": {"@filename": None},
-                                        }
+                                        "material": UrdfExporter._rod_material_to_xmltodict(
+                                            material=v.material
+                                        )
                                     }
                                     if v.material is not None
                                     else dict()
@@ -462,4 +461,24 @@ class UrdfExporter(abc.ABC):
                 if geometry.mesh is not None
                 else dict()
             ),
+        }
+
+    @staticmethod
+    def _rod_material_to_xmltodict(material: rod.Material) -> Dict[str, Any]:
+        if material.script is not None:
+            msg = "Material scripts are not supported, returning default material"
+            logging.info(msg=msg)
+            return UrdfExporter.DefaultMaterial
+
+        if material.diffuse is None:
+            msg = "Material diffuse color is not defined, returning default material"
+            logging.info(msg=msg)
+            return UrdfExporter.DefaultMaterial
+
+        return {
+            "@name": f"color_{hash(' '.join(np.array(material.diffuse, dtype=str)))}",
+            "color": {
+                "@rgba": " ".join(np.array(material.diffuse, dtype=str)),
+            },
+            # "texture": {"@filename": None},  # TODO
         }
