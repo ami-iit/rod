@@ -28,6 +28,22 @@ class UrdfExporter(abc.ABC):
         indent: str = "  ",
         gazebo_preserve_fixed_joints: Union[bool, List[str]] = False,
     ) -> str:
+        """
+        Convert an in-memory SDF model to a URDF string.
+
+        Args:
+            sdf: The SDF model parsed by ROD to convert.
+            pretty: Whether to include indentation and newlines in the output.
+            indent: The string to use for each indentation level.
+            gazebo_preserve_fixed_joints: Whether to inject additional `<gazebo>` elements in the
+                resulting URDF to preserve fixed joints in case of re-loading into sdformat.
+                If a list of strings is passed, only the listed fixed joints will be preserved.
+                If `True` is passed, all fixed joints will be preserved.
+
+        Returns:
+            The URDF string representing the converted SDF model.
+        """
+
         # Operate on a copy of the sdf object
         sdf = copy.deepcopy(sdf)
 
@@ -52,7 +68,7 @@ class UrdfExporter(abc.ABC):
             raise RuntimeError("Invalid model pose")
 
         # If the model pose is not zero, warn that it will be ignored.
-        # In fact, the pose wrt world of the canonical link will be used instead.
+        # In fact, the pose wrt world of the canonical link (base) will be used instead.
         if (
             model.is_fixed_base()
             and model.pose is not None
@@ -192,13 +208,14 @@ class UrdfExporter(abc.ABC):
         # Convert SDF to URDF
         # ===================
 
+        # In URDF, links are directly attached to the frame of their parent joint
         for link in model.links():
             if link.pose is not None and not np.allclose(link.pose.pose, np.zeros(6)):
                 msg = "Ignoring non-trivial pose of link '{name}'"
                 logging.warning(msg.format(name=link.name))
                 link.pose = None
 
-        # Define the world link used for fixed-base models
+        # Define the 'world' link used for fixed-base models
         world_link = rod.Link(name="world")
 
         # Create a new dict in xmldict format with only the elements supported by URDF
@@ -267,7 +284,7 @@ class UrdfExporter(abc.ABC):
                     }
                     for l in model.links()
                 ]
-                # Add the extra links resulting from the frame->link conversion
+                # Add the extra links resulting from the frame->dummy_link conversion
                 + extra_links_from_frames,
                 # http://wiki.ros.org/urdf/XML/joint
                 "joint": [
