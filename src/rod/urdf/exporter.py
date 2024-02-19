@@ -11,7 +11,8 @@ from rod.kinematics.tree_transforms import TreeTransforms
 
 
 class UrdfExporter(abc.ABC):
-    SUPPORTED_SDF_JOINT_TYPES = {"revolute", "continuous", "prismatic", "fixed"}
+
+    SupportedSdfJointTypes = {"revolute", "continuous", "prismatic", "fixed"}
 
     DefaultMaterial = {
         "@name": "default_material",
@@ -351,7 +352,7 @@ class UrdfExporter(abc.ABC):
                         # safety_controller: does not have any SDF corresponding element
                     }
                     for j in model.joints()
-                    if j.type in UrdfExporter.SUPPORTED_SDF_JOINT_TYPES
+                    if j.type in UrdfExporter.SupportedSdfJointTypes
                 ]
                 # Add the extra joints resulting from the frame->link conversion
                 + extra_joints_from_frames,
