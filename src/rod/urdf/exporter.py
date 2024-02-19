@@ -23,7 +23,7 @@ class UrdfExporter(abc.ABC):
 
     @staticmethod
     def sdf_to_urdf_string(
-        sdf: rod.Sdf,
+        sdf: rod.Sdf | rod.Model,
         pretty: bool = False,
         indent: str = "  ",
         gazebo_preserve_fixed_joints: Union[bool, List[str]] = False,
@@ -31,11 +31,11 @@ class UrdfExporter(abc.ABC):
         # Operate on a copy of the sdf object
         sdf = copy.deepcopy(sdf)
 
-        if len(sdf.models()) > 1:
+        if isinstance(sdf, rod.Sdf) and len(sdf.models()) > 1:
             raise RuntimeError("URDF only supports one robot element")
 
         # Get the model
-        model = sdf.models()[0]
+        model = sdf if isinstance(sdf, rod.Model) else sdf.models()[0]
 
         # Remove all poses that could be assumed being implicit
         model.resolve_frames(is_top_level=True, explicit_frames=False)
