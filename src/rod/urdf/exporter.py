@@ -11,23 +11,47 @@ from rod.kinematics.tree_transforms import TreeTransforms
 
 
 class UrdfExporter(abc.ABC):
-    SUPPORTED_SDF_JOINT_TYPES = {"revolute", "continuous", "prismatic", "fixed"}
+
+    SupportedSdfJointTypes = {"revolute", "continuous", "prismatic", "fixed"}
+
+    DefaultMaterial = {
+        "@name": "default_material",
+        "color": {
+            "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
+        },
+    }
 
     @staticmethod
     def sdf_to_urdf_string(
-        sdf: rod.Sdf,
+        sdf: rod.Sdf | rod.Model,
         pretty: bool = False,
         indent: str = "  ",
         gazebo_preserve_fixed_joints: Union[bool, List[str]] = False,
     ) -> str:
+        """
+        Convert an in-memory SDF model to a URDF string.
+
+        Args:
+            sdf: The SDF model parsed by ROD to convert.
+            pretty: Whether to include indentation and newlines in the output.
+            indent: The string to use for each indentation level.
+            gazebo_preserve_fixed_joints: Whether to inject additional `<gazebo>` elements in the
+                resulting URDF to preserve fixed joints in case of re-loading into sdformat.
+                If a list of strings is passed, only the listed fixed joints will be preserved.
+                If `True` is passed, all fixed joints will be preserved.
+
+        Returns:
+            The URDF string representing the converted SDF model.
+        """
+
         # Operate on a copy of the sdf object
         sdf = copy.deepcopy(sdf)
 
-        if len(sdf.models()) > 1:
+        if isinstance(sdf, rod.Sdf) and len(sdf.models()) > 1:
             raise RuntimeError("URDF only supports one robot element")
 
         # Get the model
-        model = sdf.models()[0]
+        model = sdf if isinstance(sdf, rod.Model) else sdf.models()[0]
 
         # Remove all poses that could be assumed being implicit
         model.resolve_frames(is_top_level=True, explicit_frames=False)
@@ -44,7 +68,7 @@ class UrdfExporter(abc.ABC):
             raise RuntimeError("Invalid model pose")
 
         # If the model pose is not zero, warn that it will be ignored.
-        # In fact, the pose wrt world of the canonical link will be used instead.
+        # In fact, the pose wrt world of the canonical link (base) will be used instead.
         if (
             model.is_fixed_base()
             and model.pose is not None
@@ -184,13 +208,14 @@ class UrdfExporter(abc.ABC):
         # Convert SDF to URDF
         # ===================
 
+        # In URDF, links are directly attached to the frame of their parent joint
         for link in model.links():
             if link.pose is not None and not np.allclose(link.pose.pose, np.zeros(6)):
                 msg = "Ignoring non-trivial pose of link '{name}'"
                 logging.warning(msg.format(name=link.name))
                 link.pose = None
 
-        # Define the world link used for fixed-base models
+        # Define the 'world' link used for fixed-base models
         world_link = rod.Link(name="world")
 
         # Create a new dict in xmldict format with only the elements supported by URDF
@@ -233,17 +258,9 @@ class UrdfExporter(abc.ABC):
                                 ),
                                 **(
                                     {
-                                        "material": {
-                                            # TODO: add colors logic
-                                            "@name": "white",
-                                            "color": {
-                                                "@rgba": " ".join(
-                                                    np.array([1, 1, 1, 0], dtype=str)
-                                                )
-                                            },
-                                            # TODO: add textures support
-                                            # "texture": {"@filename": None},
-                                        }
+                                        "material": UrdfExporter._rod_material_to_xmltodict(
+                                            material=v.material
+                                        )
                                     }
                                     if v.material is not None
                                     else dict()
@@ -267,7 +284,7 @@ class UrdfExporter(abc.ABC):
                     }
                     for l in model.links()
                 ]
-                # Add the extra links resulting from the frame->link conversion
+                # Add the extra links resulting from the frame->dummy_link conversion
                 + extra_links_from_frames,
                 # http://wiki.ros.org/urdf/XML/joint
                 "joint": [
@@ -352,7 +369,7 @@ class UrdfExporter(abc.ABC):
                         # safety_controller: does not have any SDF corresponding element
                     }
                     for j in model.joints()
-                    if j.type in UrdfExporter.SUPPORTED_SDF_JOINT_TYPES
+                    if j.type in UrdfExporter.SupportedSdfJointTypes
                 ]
                 # Add the extra joints resulting from the frame->link conversion
                 + extra_joints_from_frames,
@@ -462,4 +479,24 @@ class UrdfExporter(abc.ABC):
                 if geometry.mesh is not None
                 else dict()
             ),
+        }
+
+    @staticmethod
+    def _rod_material_to_xmltodict(material: rod.Material) -> Dict[str, Any]:
+        if material.script is not None:
+            msg = "Material scripts are not supported, returning default material"
+            logging.info(msg=msg)
+            return UrdfExporter.DefaultMaterial
+
+        if material.diffuse is None:
+            msg = "Material diffuse color is not defined, returning default material"
+            logging.info(msg=msg)
+            return UrdfExporter.DefaultMaterial
+
+        return {
+            "@name": f"color_{hash(' '.join(np.array(material.diffuse, dtype=str)))}",
+            "color": {
+                "@rgba": " ".join(np.array(material.diffuse, dtype=str)),
+            },
+            # "texture": {"@filename": None},  # TODO
         }
