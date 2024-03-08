@@ -2,12 +2,20 @@ import os
 import pathlib
 from typing import List
 
+import resolve_robotics_uri_py
+
 from rod import Geometry, logging
 
 
 def resolve_local_uri(uri: str) -> pathlib.Path:
+
+    try:
+        return resolve_robotics_uri_py.resolve_robotics_uri(uri=uri)
+    except:
+        pass
+
     # Remove the prefix of the URI
-    uri_no_prefix = uri.split(sep="//")[-1]
+    uri_no_prefix = uri.split(sep="://")[-1]
 
     paths = []
     paths += paths_from_environment_variable("GZ_SIM_RESOURCE_PATH")
