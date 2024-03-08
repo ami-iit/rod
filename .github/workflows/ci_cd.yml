@@ -114,6 +114,7 @@ jobs:
             mashumaro \
             numpy \
             packaging \
+            resolve-robotics-uri-py \
             scipy \
             xmltodict \
             black \
