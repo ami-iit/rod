@@ -70,102 +70,106 @@ def switch_frame_convention(
     # Define the default reference frames of the different elements
     # =============================================================
 
-    if frame_convention is FrameConvention.World:
+    match frame_convention:
+        case FrameConvention.World:
+            reference_frame_model = lambda m: "world"
+            reference_frame_links = lambda l: "world"
+            reference_frame_frames = lambda f: "world"
+            reference_frame_joints = lambda j: "world"
+            reference_frame_visuals = lambda v: "world"
+            reference_frame_inertials = lambda i, parent_link: "world"
+            reference_frame_collisions = lambda c: "world"
+            reference_frame_link_canonical = "world"
 
-        reference_frame_model = lambda m: "world"
-        reference_frame_links = lambda l: "world"
-        reference_frame_frames = lambda f: "world"
-        reference_frame_joints = lambda j: "world"
-        reference_frame_visuals = lambda v: "world"
-        reference_frame_inertials = lambda i, parent_link: "world"
-        reference_frame_collisions = lambda c: "world"
-        reference_frame_link_canonical = "world"
+        case FrameConvention.Model:
 
-    elif frame_convention is FrameConvention.Model:
-
-        reference_frame_model = lambda m: "world"
-        reference_frame_links = lambda l: "__model__"
-        reference_frame_frames = lambda f: "__model__"
-        reference_frame_joints = lambda j: "__model__"
-        reference_frame_visuals = lambda v: "__model__"
-        reference_frame_inertials = lambda i, parent_link: "__model__"
-        reference_frame_collisions = lambda c: "__model__"
-        reference_frame_link_canonical = "__model__"
-
-    elif frame_convention is FrameConvention.Sdf:
-
-        visual_name_to_parent_link = {
-            visual_name: parent_link
-            for d in [{v.name: link for v in link.visuals()} for link in model.links()]
-            for visual_name, parent_link in d.items()
-        }
-
-        collision_name_to_parent_link = {
-            collision_name: parent_link
-            for d in [
-                {c.name: link for c in link.collisions()} for link in model.links()
-            ]
-            for collision_name, parent_link in d.items()
-        }
-
-        reference_frame_model = lambda m: "world"
-        reference_frame_links = lambda l: "__model__"
-        reference_frame_frames = lambda f: f.attached_to
-        reference_frame_joints = lambda j: joint.child
-        reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
-        reference_frame_inertials = lambda i, parent_link: parent_link.name
-        reference_frame_collisions = lambda c: collision_name_to_parent_link[
-            c.name
-        ].name
-        reference_frame_link_canonical = "__model__"
-
-    elif frame_convention is FrameConvention.Urdf:
-
-        visual_name_to_parent_link = {
-            visual_name: parent_link
-            for d in [{v.name: link for v in link.visuals()} for link in model.links()]
-            for visual_name, parent_link in d.items()
-        }
-
-        collision_name_to_parent_link = {
-            collision_name: parent_link
-            for d in [
-                {c.name: link for c in link.collisions()} for link in model.links()
-            ]
-            for collision_name, parent_link in d.items()
-        }
-
-        link_name_to_parent_joint_names = defaultdict(list)
-
-        for j in model.joints():
-            if j.child != model.get_canonical_link():
-                link_name_to_parent_joint_names[j.child].append(j.name)
-            else:
-                # The pose of the canonical link is used to define the origin of
-                # the URDF joint connecting the world to the robot
-                assert model.is_fixed_base()
-                link_name_to_parent_joint_names[j.child].append("world")
-
-        reference_frame_model = lambda m: "world"
-        reference_frame_links = lambda l: link_name_to_parent_joint_names[l.name][0]
-        reference_frame_frames = lambda f: f.attached_to
-        reference_frame_joints = lambda j: j.parent
-        reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
-        reference_frame_inertials = lambda i, parent_link: parent_link.name
-        reference_frame_collisions = lambda c: collision_name_to_parent_link[
-            c.name
-        ].name
-
-        if model.is_fixed_base():
-            canonical_link = {l.name: l for l in model.links()}[
-                model.get_canonical_link()
-            ]
-            reference_frame_link_canonical = reference_frame_links(l=canonical_link)
-        else:
+            reference_frame_model = lambda m: "world"
+            reference_frame_links = lambda l: "__model__"
+            reference_frame_frames = lambda f: "__model__"
+            reference_frame_joints = lambda j: "__model__"
+            reference_frame_visuals = lambda v: "__model__"
+            reference_frame_inertials = lambda i, parent_link: "__model__"
+            reference_frame_collisions = lambda c: "__model__"
             reference_frame_link_canonical = "__model__"
 
-    else:
-        raise ValueError(frame_convention)
+        case FrameConvention.Sdf:
+
+            visual_name_to_parent_link = {
+                visual_name: parent_link
+                for d in [
+                    {v.name: link for v in link.visuals()} for link in model.links()
+                ]
+                for visual_name, parent_link in d.items()
+            }
+
+            collision_name_to_parent_link = {
+                collision_name: parent_link
+                for d in [
+                    {c.name: link for c in link.collisions()} for link in model.links()
+                ]
+                for collision_name, parent_link in d.items()
+            }
+
+            reference_frame_model = lambda m: "world"
+            reference_frame_links = lambda l: "__model__"
+            reference_frame_frames = lambda f: f.attached_to
+            reference_frame_joints = lambda j: joint.child
+            reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
+            reference_frame_inertials = lambda i, parent_link: parent_link.name
+            reference_frame_collisions = lambda c: collision_name_to_parent_link[
+                c.name
+            ].name
+            reference_frame_link_canonical = "__model__"
+
+        case FrameConvention.Urdf:
+
+            visual_name_to_parent_link = {
+                visual_name: parent_link
+                for d in [
+                    {v.name: link for v in link.visuals()} for link in model.links()
+                ]
+                for visual_name, parent_link in d.items()
+            }
+
+            collision_name_to_parent_link = {
+                collision_name: parent_link
+                for d in [
+                    {c.name: link for c in link.collisions()} for link in model.links()
+                ]
+                for collision_name, parent_link in d.items()
+            }
+
+            link_name_to_parent_joint_names = defaultdict(list)
+
+            for j in model.joints():
+                if j.child != model.get_canonical_link():
+                    link_name_to_parent_joint_names[j.child].append(j.name)
+                else:
+                    # The pose of the canonical link is used to define the origin of
+                    # the URDF joint connecting the world to the robot
+                    assert model.is_fixed_base()
+                    link_name_to_parent_joint_names[j.child].append("world")
+
+            reference_frame_model = lambda m: "world"
+            reference_frame_links = lambda l: link_name_to_parent_joint_names[l.name][0]
+            reference_frame_frames = lambda f: f.attached_to
+            reference_frame_joints = lambda j: j.parent
+            reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
+            reference_frame_inertials = lambda i, parent_link: parent_link.name
+            reference_frame_collisions = lambda c: collision_name_to_parent_link[
+                c.name
+            ].name
+
+            if model.is_fixed_base():
+                canonical_link = {l.name: l for l in model.links()}[
+                    model.get_canonical_link()
+                ]
+                reference_frame_link_canonical = reference_frame_links(l=canonical_link)
+            else:
+                reference_frame_link_canonical = "__model__"
+
+        case _:
+            raise ValueError(frame_convention)
 
     # =========================================
     # Process the reference frames of the model
@@ -288,33 +292,37 @@ def find_parent_link_of_frame(frame: rod.Frame, model: rod.Model) -> str:
 
     assert isinstance(frame, rod.Frame)
 
-    if frame.attached_to in links_dict:
-        parent = links_dict[frame.attached_to]
+    match frame.attached_to:
+        case anchor if anchor in links_dict:
+            parent = links_dict[frame.attached_to]
 
-    elif frame.attached_to in frames_dict:
-        parent = frames_dict[frame.attached_to]
+        case anchor if anchor in frames_dict:
+            parent = frames_dict[frame.attached_to]
 
-    elif frame.attached in {model.name, "__model__"}:
-        return model.get_canonical_link()
+        case frame if frame.attached in {model.name, "__model__"}:
+            return model.get_canonical_link()
 
-    elif frame.attached_to in joints_dict:
-        raise ValueError("Frames cannot be attached to joints")
+        case anchor if anchor in joints_dict:
+            raise ValueError("Frames cannot be attached to joints")
 
-    elif frame.attached_to in sub_models_dict:
-        raise RuntimeError("Model composition not yet supported")
+        case anchor if anchor in sub_models_dict:
+            raise RuntimeError("Model composition not yet supported")
 
-    else:
-        raise RuntimeError(f"Failed to find element with name '{frame.attached_to}'")
+        case _:
+            raise RuntimeError(
+                f"Failed to find element with name '{frame.attached_to}'"
+            )
 
     # At this point, the parent is either a link or another frame.
     assert isinstance(parent, (rod.Link, rod.Frame))
 
-    # If the parent is a link, can stop searching.
-    if isinstance(parent, rod.Link):
-        return parent.name
+    match parent:
+        # If the parent is a link, can stop searching.
+        case parent if isinstance(parent, rod.Link):
+            return parent.name
 
-    # If the parent is another frame, keep looking for the parent link.
-    if isinstance(parent, rod.Frame):
-        return find_parent_link_of_frame(frame=parent, model=model)
+        # If the parent is another frame, keep looking for the parent link.
+        case parent if isinstance(parent, rod.Frame):
+            return find_parent_link_of_frame(frame=parent, model=model)
 
     raise RuntimeError("This recursive function should never arrive here.")

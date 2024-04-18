@@ -28,60 +28,65 @@ class TreeTransforms:
         )
 
     def transform(self, name: str) -> npt.NDArray:
-        if name == TreeFrame.WORLD:
-            return np.eye(4)
+        match name:
+            case TreeFrame.WORLD:
 
-        if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
-            relative_to = self.kinematic_tree.model.pose.relative_to
-            assert relative_to in {None, ""}, (relative_to, name)
-            return self.kinematic_tree.model.pose.transform()
+                return np.eye(4)
 
-        if name in self.kinematic_tree.joint_names():
-            edge = self.kinematic_tree.joints_dict[name]
-            assert edge.name() == name
+            case name if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
 
-            # Get the pose of the frame in which the node's pose is expressed
-            assert edge._source.pose.relative_to not in {"", None}
-            x_H_E = edge._source.pose.transform()
-            W_H_x = self.transform(name=edge._source.pose.relative_to)
+                relative_to = self.kinematic_tree.model.pose.relative_to
+                assert relative_to in {None, ""}, (relative_to, name)
+                return self.kinematic_tree.model.pose.transform()
 
-            # Compute the world-to-node transform
-            # TODO: this assumes all joint positions to be 0
-            W_H_E = W_H_x @ x_H_E
+            case name if name in self.kinematic_tree.joint_names():
 
-            return W_H_E
+                edge = self.kinematic_tree.joints_dict[name]
+                assert edge.name() == name
 
-        if name in self.kinematic_tree.link_names():
+                # Get the pose of the frame in which the node's pose is expressed
+                assert edge._source.pose.relative_to not in {"", None}
+                x_H_E = edge._source.pose.transform()
+                W_H_x = self.transform(name=edge._source.pose.relative_to)
 
-            element = self.kinematic_tree.links_dict[name]
+                # Compute the world-to-node transform
+                # TODO: this assumes all joint positions to be 0
+                W_H_E = W_H_x @ x_H_E
 
-            assert element.name() == name
-            assert element._source.pose.relative_to not in {"", None}
+                return W_H_E
 
-            # Get the pose of the frame in which the link's pose is expressed.
-            x_H_L = element._source.pose.transform()
-            W_H_x = self.transform(name=element._source.pose.relative_to)
+            case name if name in self.kinematic_tree.link_names():
 
-            # Compute the world transform of the link.
-            W_H_L = W_H_x @ x_H_L
-            return W_H_L
+                element = self.kinematic_tree.links_dict[name]
 
-        if name in self.kinematic_tree.frame_names():
+                assert element.name() == name
+                assert element._source.pose.relative_to not in {"", None}
 
-            element = self.kinematic_tree.frames_dict[name]
+                # Get the pose of the frame in which the link's pose is expressed.
+                x_H_L = element._source.pose.transform()
+                W_H_x = self.transform(name=element._source.pose.relative_to)
 
-            assert element.name() == name
-            assert element._source.pose.relative_to not in {"", None}
+                # Compute the world transform of the link.
+                W_H_L = W_H_x @ x_H_L
+                return W_H_L
 
-            # Get the pose of the frame in which the frame's pose is expressed.
-            x_H_F = element._source.pose.transform()
-            W_H_x = self.transform(name=element._source.pose.relative_to)
+            case name if name in self.kinematic_tree.frame_names():
 
-            # Compute the world transform of the frame.
-            W_H_F = W_H_x @ x_H_F
-            return W_H_F
+                element = self.kinematic_tree.frames_dict[name]
 
-        raise ValueError(name)
+                assert element.name() == name
+                assert element._source.pose.relative_to not in {"", None}
+
+                # Get the pose of the frame in which the frame's pose is expressed.
+                x_H_F = element._source.pose.transform()
+                W_H_x = self.transform(name=element._source.pose.relative_to)
+
+                # Compute the world transform of the frame.
+                W_H_F = W_H_x @ x_H_F
+                return W_H_F
+
+            case _:
+                raise ValueError(name)
 
     def relative_transform(self, relative_to: str, name: str) -> npt.NDArray:
 
