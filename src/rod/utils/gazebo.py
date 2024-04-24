@@ -99,6 +99,7 @@ class GazeboHelper:
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
+                check=True,
             )
 
         if cp.returncode != 0:

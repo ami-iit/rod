@@ -37,7 +37,7 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
         false_vals = {"0", "False", "false"}
         assert data in true_vals.union(false_vals)
 
-        return True if data in true_vals else False
+        return data in true_vals
 
     @staticmethod
     def serialize_float(data: float) -> str:

@@ -101,8 +101,8 @@ class Sdf(Element):
         # Parse the SDF to dict
         try:
             xml_dict = xmltodict.parse(xml_input=sdf_string)
-        except Exception:
-            raise ValueError("Failed to parse 'sdf' argument")
+        except Exception as exc:
+            raise exc("Failed to parse 'sdf' argument")
 
         # Look for the top-level <sdf> element
         try:
