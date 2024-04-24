@@ -82,7 +82,7 @@ class Sdf(Element):
             and len(sdf) <= MAX_PATH
             and pathlib.Path(sdf).is_file()
         ):
-            sdf_string = pathlib.Path(sdf).read_text()
+            sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
             is_urdf = (
                 is_urdf if is_urdf is not None else pathlib.Path(sdf).suffix == ".urdf"
             )

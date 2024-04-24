@@ -65,7 +65,9 @@ class GazeboHelper:
             and len(model_description) <= MAX_PATH
             and pathlib.Path(model_description).is_file()
         ):
-            model_description_string = pathlib.Path(model_description).read_text()
+            model_description_string = pathlib.Path(model_description).read_text(
+                encoding="utf-8"
+            )
 
         # Finally, it must be a SDF/URDF string
         else:
