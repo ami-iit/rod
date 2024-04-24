@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import dataclasses
 from typing import ClassVar, List, Optional, Union
@@ -29,8 +31,8 @@ class TreeElement(abc.ABC):
 
 @dataclasses.dataclass(eq=False)
 class DirectedTreeNode(TreeElement):
-    parent: Optional["DirectedTreeNode"] = None
-    children: List["DirectedTreeNode"] = dataclasses.field(default_factory=list)
+    parent: Optional[DirectedTreeNode] = None
+    children: List[DirectedTreeNode] = dataclasses.field(default_factory=list)
 
     _source: Optional["rod.Link"] = dataclasses.field(default=None, repr=False)
 
@@ -69,7 +71,7 @@ class TreeEdge(TreeElement):
 
     _source: Optional[rod.Joint] = dataclasses.field(default=None, repr=False)
 
-    def pose(self) -> "rod.Pose":
+    def pose(self) -> rod.Pose:
         return self._source.pose
 
     def name(self) -> str:
@@ -109,8 +111,8 @@ class TreeFrame(TreeElement):
     @staticmethod
     def from_node(
         node: DirectedTreeNode,
-        attached_to: Union[DirectedTreeNode, "TreeFrame", TreeEdge] = None,
-    ) -> "TreeFrame":
+        attached_to: Union[DirectedTreeNode, TreeFrame, TreeEdge] = None,
+    ) -> TreeFrame:
         attached_to = attached_to if attached_to is not None else node.parent
 
         logging.debug(
@@ -128,8 +130,8 @@ class TreeFrame(TreeElement):
     @staticmethod
     def from_edge(
         edge: TreeEdge,
-        attached_to: Union[DirectedTreeNode, "TreeFrame", TreeEdge] = None,
-    ) -> "TreeFrame":
+        attached_to: Union[DirectedTreeNode, TreeFrame, TreeEdge] = None,
+    ) -> TreeFrame:
         attached_to = attached_to if attached_to is not None else edge.parent
 
         logging.debug(

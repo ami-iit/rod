@@ -15,7 +15,7 @@ class FrameConvention(enum.IntEnum):
 
 
 def switch_frame_convention(
-    model: "rod.Model",
+    model: rod.Model,
     frame_convention: FrameConvention,
     is_top_level: bool = True,
     attach_frames_to_links: bool = True,

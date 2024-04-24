@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 
@@ -14,9 +16,10 @@ class TreeTransforms:
     kinematic_tree: KinematicTree = dataclasses.dataclass(init=False)
 
     @staticmethod
-    def build(model: "rod.Model", is_top_level: bool = True) -> "TreeTransforms":
-
-        # Operate on a deep copy of the model to avoid side effects.
+    def build(
+        model: rod.Model,
+        is_top_level: bool = True,
+    ) -> TreeTransforms:
         model = copy.deepcopy(model)
 
         # Make sure that all elements have a pose attribute with explicit 'relative_to'.

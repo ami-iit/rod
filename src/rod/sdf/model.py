@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from typing import List, Optional, Union
 
@@ -155,7 +157,7 @@ class Model(Element):
 
     def switch_frame_convention(
         self,
-        frame_convention: "rod.FrameConvention",
+        frame_convention: rod.FrameConvention,
         is_top_level: bool = True,
         explicit_frames: bool = True,
         attach_frames_to_links: bool = True,

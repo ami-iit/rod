@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import os
 import pathlib
@@ -44,7 +46,7 @@ class Sdf(Element):
         return self.model
 
     @staticmethod
-    def load(sdf: Union[pathlib.Path, str], is_urdf: Optional[bool] = None) -> "Sdf":
+    def load(sdf: Union[pathlib.Path, str], is_urdf: Optional[bool] = None) -> Sdf:
         """
         Load an SDF resource.
 

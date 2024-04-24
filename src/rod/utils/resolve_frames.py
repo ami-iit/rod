@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 from typing import List, Union
 
@@ -52,7 +54,7 @@ def update_element_with_pose(
 
 
 def resolve_model_frames(
-    model: "rod.Model", is_top_level: bool = True, explicit_frames: bool = True
+    model: rod.Model, is_top_level: bool = True, explicit_frames: bool = True
 ) -> None:
     # Close the helper for compactness
     update_element = functools.partial(
