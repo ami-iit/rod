@@ -201,7 +201,7 @@ class KinematicTree(DirectedTree):
             new_base_node, additional_frames = KinematicTree.remove_edge(
                 edge=world_to_base_edge, keep_parent=False
             )
-            assert any([f.name() == TreeFrame.WORLD for f in additional_frames])
+            assert any(f.name() == TreeFrame.WORLD for f in additional_frames)
 
             # Replace the former base node with the new base node
             nodes_links_dict[new_base_node.name()] = new_base_node
