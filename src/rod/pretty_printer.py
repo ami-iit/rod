@@ -30,7 +30,7 @@ class DataclassPrettyPrinter(abc.ABC):
         ]
 
         return (
-            f"[\n"
+            "[\n"
             + ",\n".join(f"{spacing_level}{el!s}" for el in list_str)
             + f",\n{spacing_level_up}]"
         )
