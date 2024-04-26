@@ -14,6 +14,7 @@ from rod.tree import TreeFrame
 @dataclasses.dataclass
 class TreeTransforms:
     kinematic_tree: KinematicTree = dataclasses.dataclass(init=False)
+    _transform_cache: dict[str, npt.NDArray] = dataclasses.field(default_factory=dict)
 
     @staticmethod
     def build(
@@ -31,6 +32,13 @@ class TreeTransforms:
         )
 
     def transform(self, name: str) -> npt.NDArray:
+        if name in self._transform_cache:
+            return self._transform_cache[name]
+
+        self._transform_cache[name] = self._compute_transform(name=name)
+        return self._transform_cache[name]
+
+    def _compute_transform(self, name: str) -> npt.NDArray:
         match name:
             case TreeFrame.WORLD:
 
