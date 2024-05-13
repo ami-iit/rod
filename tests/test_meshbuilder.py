@@ -1,8 +1,10 @@
-from rod.builder.primitives import MeshBuilder
-import trimesh
 import os
-import numpy as np
 import pathlib
+
+import numpy as np
+import trimesh
+
+from rod.builder.primitives import MeshBuilder
 
 
 def test_builder_creation():
