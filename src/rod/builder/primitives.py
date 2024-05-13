@@ -1,4 +1,9 @@
 import dataclasses
+import pathlib
+from typing import Union
+
+import trimesh
+from numpy.typing import ArrayLike
 
 import rod
 from rod.builder.primitive_builder import PrimitiveBuilder
@@ -54,3 +59,28 @@ class CylinderBuilder(PrimitiveBuilder):
         return rod.Geometry(
             cylinder=rod.Cylinder(radius=self.radius, length=self.length)
         )
+
+
+@dataclasses.dataclass
+class MeshBuilder(PrimitiveBuilder):
+    mesh_path: Union[str, pathlib.Path]
+    scale: ArrayLike
+
+    def __post_init__(self) -> None:
+        self.mesh: trimesh.base.Trimesh = trimesh.load(
+            str(self.mesh_path), force="mesh"
+        )
+        assert self.scale.shape == (
+            3,
+        ), f"Scale must be a 3D vector, got {self.scale.shape}"
+
+    def _inertia(self) -> rod.Inertia:
+        inertia = self.mesh.moment_inertia
+        return rod.Inertia(
+            ixx=inertia[0, 0],
+            iyy=inertia[1, 1],
+            izz=inertia[2, 2],
+        )
+
+    def _geometry(self) -> rod.Geometry:
+        return rod.Geometry(mesh=rod.Mesh(uri=str(self.mesh_path), scale=self.scale))
