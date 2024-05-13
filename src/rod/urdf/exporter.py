@@ -162,40 +162,23 @@ class UrdfExporter(abc.ABC):
                 relative_to=parent_link_name,
             )
 
-            # Smallest value not ignored by sdformat
-            epsilon = 1e-6 + 1e-9
-
             # New dummy link with same name of the frame
             new_link = {
                 "@name": frame.name,
-                # If the link has no inertial properties, parsing again the exported
-                # URDF model with SDF would ignore it.
-                # We need to add a tiny fake mass greater than 1e-6.
-                # https://github.com/gazebosim/sdformat/issues/199#issuecomment-622127508
                 "inertial": {
                     "origin": {
                         "@xyz": "0 0 0",
                         "@rpy": "0 0 0",
                     },
-                    "mass": {"@value": str(epsilon)},
+                    "mass": {"@value": 0.0},
                     "inertia": {
-                        "@ixx": str(epsilon),
-                        "@ixy": 0,
-                        "@ixz": 0,
-                        "@iyy": str(epsilon),
+                        "@ixx": 0.0,
+                        "@ixy": 0.0,
+                        "@ixz": 0.0,
+                        "@iyy": 0.0,
                         "@iyz": 0,
-                        "@izz": str(epsilon),
+                        "@izz": 0.0,
                     },
-                },
-                "visual": {
-                    "@name": f"{frame.name}_visual",
-                    "origin": {
-                        "@xyz": "0 0 0",
-                        "@rpy": "0 0 0",
-                    },
-                    "geometry": UrdfExporter._rod_geometry_to_xmltodict(
-                        geometry=rod.Geometry(sphere=rod.Sphere(radius=0.0))
-                    ),
                 },
             }
 
@@ -412,14 +395,6 @@ class UrdfExporter(abc.ABC):
                 # https://classic.gazebosim.org/tutorials?tut=ros_urdf
                 # https://github.com/gazebosim/sdformat/issues/199#issuecomment-622127508
                 "gazebo": [
-                    {
-                        "@reference": extra_joint["@name"],
-                        "preserveFixedJoint": "true",
-                        "disableFixedJointLumping": "true",
-                    }
-                    for extra_joint in extra_joints_from_frames
-                ]
-                + [
                     {
                         "@reference": fixed_joint,
                         "preserveFixedJoint": "true",
