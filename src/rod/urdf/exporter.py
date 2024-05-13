@@ -233,6 +233,12 @@ class UrdfExporter(abc.ABC):
 
         assert isinstance(gazebo_preserve_fixed_joints, list)
 
+        # Check that all fixed joints to preserve are actually present in the model.
+        for fixed_joint_name in gazebo_preserve_fixed_joints:
+            all_model_joint_names = {j.name for j in model.joints()}
+            if fixed_joint_name not in all_model_joint_names:
+                raise RuntimeError(f"Joint '{fixed_joint_name}' not found in the model")
+
         # ===================
         # Convert SDF to URDF
         # ===================
