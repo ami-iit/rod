@@ -3,7 +3,7 @@ import pathlib
 from typing import Union
 
 import trimesh
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 
 import rod
 from rod.builder.primitive_builder import PrimitiveBuilder
@@ -64,7 +64,7 @@ class CylinderBuilder(PrimitiveBuilder):
 @dataclasses.dataclass
 class MeshBuilder(PrimitiveBuilder):
     mesh_path: Union[str, pathlib.Path]
-    scale: ArrayLike
+    scale: NDArray
 
     def __post_init__(self) -> None:
         self.mesh: trimesh.base.Trimesh = trimesh.load(
@@ -78,7 +78,10 @@ class MeshBuilder(PrimitiveBuilder):
         inertia = self.mesh.moment_inertia
         return rod.Inertia(
             ixx=inertia[0, 0],
+            ixy=inertia[0, 1],
+            ixz=inertia[0, 2],
             iyy=inertia[1, 1],
+            iyz=inertia[1, 2],
             izz=inertia[2, 2],
         )
 
