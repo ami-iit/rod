@@ -67,12 +67,14 @@ class MeshBuilder(PrimitiveBuilder):
     scale: NDArray
 
     def __post_init__(self) -> None:
-        self.mesh: trimesh.base.Trimesh = trimesh.load(
-            str(self.mesh_path), force="mesh"
-        )
-        assert self.scale.shape == (
-            3,
-        ), f"Scale must be a 3D vector, got {self.scale.shape}"
+            self.mesh: trimesh.base.Trimesh = trimesh.load(
+                str(self.mesh_path),
+                file_type="stl",
+                force="mesh",
+            )
+            assert self.scale.shape == (
+                3,
+            ), f"Scale must be a 3D vector, got {self.scale.shape}"
 
     def _inertia(self) -> rod.Inertia:
         inertia = self.mesh.moment_inertia
