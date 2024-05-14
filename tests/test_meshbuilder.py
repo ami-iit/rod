@@ -31,9 +31,7 @@ def test_builder_creation():
     assert (
         builder.mesh.moment_inertia.all() == mesh.moment_inertia.all()
     ), f"{builder.mesh.moment_inertia} != {mesh.moment_inertia}"
-    assert (
-        builder.mesh.volume == mesh.volume
-    ), f"{builder.mesh.volume} != {mesh.volume}"
+    assert builder.mesh.volume == mesh.volume, f"{builder.mesh.volume} != {mesh.volume}"
 
 
 def test_builder_creation_custom_mesh():
@@ -62,6 +60,4 @@ def test_builder_creation_custom_mesh():
     assert (
         builder.mesh.moment_inertia.all() == mesh.moment_inertia.all()
     ), f"{builder.mesh.moment_inertia} != {mesh.moment_inertia}"
-    assert (
-        builder.mesh.volume == mesh.volume
-    ), f"{builder.mesh.volume} != {mesh.volume}"
+    assert builder.mesh.volume == mesh.volume, f"{builder.mesh.volume} != {mesh.volume}"
