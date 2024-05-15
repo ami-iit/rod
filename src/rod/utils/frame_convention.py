@@ -122,11 +122,8 @@ def switch_frame_convention(
 
     from rod.kinematics.tree_transforms import TreeTransforms
 
-    # Create the tree from the model, using the original frame convention
-    # (otherwise it would call this helper obtaining an infinite loop)
-    kin = TreeTransforms.build(
-        model=model, is_top_level=is_top_level, prevent_switching_frame_convention=True
-    )
+    # Create the tree from the model.
+    kin = TreeTransforms.build(model=model, is_top_level=is_top_level)
 
     if is_top_level:
         assert model.pose.relative_to in {"", None}

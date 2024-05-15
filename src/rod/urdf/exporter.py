@@ -133,11 +133,7 @@ class UrdfExporter(abc.ABC):
         # Tree transforms helper used to process SDF frame poses, if any.
         # No need to switch frame convention to Urdf since it was already done above.
         tree_transforms = (
-            TreeTransforms.build(
-                model=model,
-                is_top_level=True,
-                prevent_switching_frame_convention=True,
-            )
+            TreeTransforms.build(model=model, is_top_level=True)
             if len(model.frames()) is not None
             else None
         )

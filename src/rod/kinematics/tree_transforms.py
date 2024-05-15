@@ -14,18 +14,15 @@ class TreeTransforms:
     kinematic_tree: KinematicTree = dataclasses.dataclass(init=False)
 
     @staticmethod
-    def build(
-        model: "rod.Model",
-        is_top_level: bool = True,
-        prevent_switching_frame_convention: bool = False,
-    ) -> "TreeTransforms":
+    def build(model: "rod.Model", is_top_level: bool = True) -> "TreeTransforms":
+
+        # Operate on a deep copy of the model to avoid side effects.
         model = copy.deepcopy(model)
 
+        # Make sure that all elements have a pose attribute with explicit 'relative_to'.
         model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
 
-        if not prevent_switching_frame_convention:
-            model.switch_frame_convention(frame_convention=rod.FrameConvention.Urdf)
-
+        # Build the kinematic tree and return the TreeTransforms object.
         return TreeTransforms(
             kinematic_tree=KinematicTree.build(model=model, is_top_level=is_top_level)
         )
