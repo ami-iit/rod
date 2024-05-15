@@ -73,13 +73,26 @@ class MeshBuilder(PrimitiveBuilder):
 
         Raises:
             AssertionError: If the scale is not a 3D vector.
+            TypeError: If the mesh_path is not a str or pathlib.Path.
         """
+
+        if isinstance(self.mesh_path, str):
+            extension = pathlib.PurePath(self.mesh_path).suffix
+        elif isinstance(self.mesh_path, pathlib.Path):
+            extension = self.mesh_path.suffix
+        else:
+            raise TypeError(
+                f"Expected str or pathlib.Path for mesh_path, got {type(self.mesh_path)}"
+            )
 
         self.mesh: trimesh.base.Trimesh = trimesh.load(
             str(self.mesh_path),
-            file_type="stl",
             force="mesh",
+            file_type=extension.lstrip("."),
         )
+
+        if not isinstance(self.scale, NDArray):
+            raise TypeError(f"Expected numpy.ndarray for scale, got {type(self.scale)}")
         assert self.scale.shape == (
             3,
         ), f"Scale must be a 3D vector, got {self.scale.shape}"
