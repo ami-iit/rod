@@ -13,7 +13,6 @@ def test_builder_creation():
 
     # Temporary write to file because rod Mesh works with uri
     with tempfile.NamedTemporaryFile() as fp:
-        # fp.write(trimesh.exchange.stl.export_stl(mesh))
         mesh.export(fp.name, file_type="stl")
 
         builder = MeshBuilder(
@@ -42,7 +41,6 @@ def test_builder_creation_custom_mesh():
 
     # Temporary write to file because rod Mesh works with uri
     with tempfile.NamedTemporaryFile() as fp:
-        # fp.write(trimesh.exchange.stl.export_stl(mesh))
         mesh.export(fp.name, file_type="stl")
 
         builder = MeshBuilder(
