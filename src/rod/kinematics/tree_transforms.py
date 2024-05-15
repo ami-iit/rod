@@ -75,6 +75,21 @@ class TreeTransforms:
         raise ValueError(name)
 
     def relative_transform(self, relative_to: str, name: str) -> npt.NDArray:
-        return np.linalg.inv(self.transform(name=relative_to)) @ self.transform(
-            name=name
+
+        world_H_name = self.transform(name=name)
+        world_H_relative_to = self.transform(name=relative_to)
+
+        return TreeTransforms.inverse(world_H_relative_to) @ world_H_name
+
+    @staticmethod
+    def inverse(transform: npt.NDArray) -> npt.NDArray:
+
+        R = transform[0:3, 0:3]
+        p = np.vstack(transform[0:3, 3])
+
+        return np.block(
+            [
+                [R.T, -R.T @ p],
+                [0, 0, 0, 1],
+            ]
         )
