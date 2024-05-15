@@ -12,7 +12,7 @@ def test_builder_creation():
     mesh = trimesh.creation.box([1, 1, 1])
 
     # Temporary write to file because rod Mesh works with uri
-    with tempfile.NamedTemporaryFile() as fp:
+    with tempfile.NamedTemporaryFile(suffix=".stl") as fp:
         mesh.export(fp.name, file_type="stl")
 
         builder = MeshBuilder(
@@ -40,7 +40,7 @@ def test_builder_creation_custom_mesh():
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
 
     # Temporary write to file because rod Mesh works with uri
-    with tempfile.NamedTemporaryFile() as fp:
+    with tempfile.NamedTemporaryFile(suffix=".stl") as fp:
         mesh.export(fp.name, file_type="stl")
 
         builder = MeshBuilder(
