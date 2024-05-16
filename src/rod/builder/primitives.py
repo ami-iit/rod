@@ -77,9 +77,9 @@ class MeshBuilder(PrimitiveBuilder):
         """
 
         if isinstance(self.mesh_path, str):
-            extension = self.mesh_path.split(".")[-1]
+            extension = pathlib.Path(self.mesh_path).suffix
         elif isinstance(self.mesh_path, pathlib.Path):
-            extension = str(self.mesh_path).split(".")[-1]
+            extension = self.mesh_path.suffix
         else:
             raise TypeError(
                 f"Expected str or pathlib.Path for mesh_path, got {type(self.mesh_path)}"
