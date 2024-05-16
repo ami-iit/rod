@@ -121,9 +121,13 @@ class UrdfExporter(abc.ABC):
             canonical_link.pose = None
 
         # Convert all poses to use the Urdf frames convention.
-        # This process drastically simplifies extracting compatible kinematic trasforms.
+        # This process drastically simplifies extracting compatible kinematic transforms.
+        # Furthermore, it post-processes frames such that they get directly attached to
+        # a real link (instead of being attached to other frames).
         model.switch_frame_convention(
-            frame_convention=rod.FrameConvention.Urdf, explicit_frames=True
+            frame_convention=rod.FrameConvention.Urdf,
+            explicit_frames=True,
+            attach_frames_to_links=True,
         )
 
         # ============================================

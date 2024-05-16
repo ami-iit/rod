@@ -158,6 +158,7 @@ class Model(Element):
         frame_convention: "rod.FrameConvention",
         is_top_level: bool = True,
         explicit_frames: bool = True,
+        attach_frames_to_links: bool = True,
     ) -> None:
         from rod.utils.frame_convention import switch_frame_convention
 
@@ -165,6 +166,7 @@ class Model(Element):
             model=self,
             frame_convention=frame_convention,
             is_top_level=is_top_level,
+            attach_frames_to_links=attach_frames_to_links,
         )
 
         self.resolve_frames(is_top_level=is_top_level, explicit_frames=explicit_frames)
