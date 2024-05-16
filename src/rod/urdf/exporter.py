@@ -1,6 +1,7 @@
 import abc
 import copy
-from typing import Any, Dict, List, Union
+import dataclasses
+from typing import Any, ClassVar, Dict, List, Set, Union
 
 import numpy as np
 import xmltodict
@@ -10,11 +11,29 @@ from rod import logging
 from rod.kinematics.tree_transforms import TreeTransforms
 
 
+@dataclasses.dataclass
 class UrdfExporter(abc.ABC):
+    """Resources to convert an in-memory ROD model to URDF."""
 
-    SupportedSdfJointTypes = {"revolute", "continuous", "prismatic", "fixed"}
+    # The string to use for each indentation level.
+    indent: str = "  "
 
-    DefaultMaterial = {
+    # Whether to include indentation and newlines in the output.
+    pretty: bool = False
+
+    # Whether to inject additional `<gazebo>` elements in the resulting URDF
+    # to preserve fixed joints in case of re-loading into sdformat.
+    # If a list of strings is passed, only the listed fixed joints will be preserved.
+    gazebo_preserve_fixed_joints: Union[bool, List[str]] = False
+
+    SupportedSdfJointTypes: ClassVar[Set[str]] = {
+        "revolute",
+        "continuous",
+        "prismatic",
+        "fixed",
+    }
+
+    DefaultMaterial: ClassVar[Dict[str, Any]] = {
         "@name": "default_material",
         "color": {
             "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
@@ -23,22 +42,27 @@ class UrdfExporter(abc.ABC):
 
     @staticmethod
     def sdf_to_urdf_string(
-        sdf: rod.Sdf | rod.Model,
+        sdf: Union[rod.Sdf, rod.Model],
         pretty: bool = False,
         indent: str = "  ",
         gazebo_preserve_fixed_joints: Union[bool, List[str]] = False,
     ) -> str:
+
+        msg = "This method is deprecated, please use '{}' instead."
+        logging.warning(msg.format("UrdfExporter.to_urdf_string"))
+
+        return UrdfExporter(
+            pretty=pretty,
+            indent=indent,
+            gazebo_preserve_fixed_joints=gazebo_preserve_fixed_joints,
+        ).to_urdf_string(sdf=sdf)
+
+    def to_urdf_string(self, sdf: Union[rod.Sdf, rod.Model]) -> str:
         """
         Convert an in-memory SDF model to a URDF string.
 
         Args:
             sdf: The SDF model parsed by ROD to convert.
-            pretty: Whether to include indentation and newlines in the output.
-            indent: The string to use for each indentation level.
-            gazebo_preserve_fixed_joints: Whether to inject additional `<gazebo>` elements in the
-                resulting URDF to preserve fixed joints in case of re-loading into sdformat.
-                If a list of strings is passed, only the listed fixed joints will be preserved.
-                If `True` is passed, all fixed joints will be preserved.
 
         Returns:
             The URDF string representing the converted SDF model.
@@ -194,6 +218,11 @@ class UrdfExporter(abc.ABC):
         # Preserve fixed joints
         # =====================
 
+        # This attribute could either be list of fixed joint names to preserve,
+        # or a boolean to preserve all fixed joints.
+        gazebo_preserve_fixed_joints = copy.copy(self.gazebo_preserve_fixed_joints)
+
+        # If it is a boolean, automatically populate the list with all fixed joints.
         if gazebo_preserve_fixed_joints is True:
             gazebo_preserve_fixed_joints = [
                 j.name for j in model.joints() if j.type == "fixed"
@@ -397,8 +426,8 @@ class UrdfExporter(abc.ABC):
 
         return xmltodict.unparse(
             input_dict=urdf_dict,
-            pretty=pretty,
-            indent=indent,
+            pretty=self.pretty,
+            indent=self.indent,
             short_empty_elements=True,
         )
 
