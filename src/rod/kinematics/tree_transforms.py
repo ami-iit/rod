@@ -51,26 +51,35 @@ class TreeTransforms:
 
             return W_H_E
 
-        if (
-            name in self.kinematic_tree.link_names()
-            or name in self.kinematic_tree.frame_names()
-        ):
-            element = (
-                self.kinematic_tree.links_dict[name]
-                if name in self.kinematic_tree.link_names()
-                else self.kinematic_tree.frames_dict[name]
-            )
-            assert element.name() == name
+        if name in self.kinematic_tree.link_names():
 
-            # Get the pose of the frame in which the node's pose is expressed
+            element = self.kinematic_tree.links_dict[name]
+
+            assert element.name() == name
             assert element._source.pose.relative_to not in {"", None}
-            x_H_N = element._source.pose.transform()
+
+            # Get the pose of the frame in which the link's pose is expressed.
+            x_H_L = element._source.pose.transform()
             W_H_x = self.transform(name=element._source.pose.relative_to)
 
-            # Compute and cache the world-to-node transform
-            W_H_N = W_H_x @ x_H_N
+            # Compute the world transform of the link.
+            W_H_L = W_H_x @ x_H_L
+            return W_H_L
 
-            return W_H_N
+        if name in self.kinematic_tree.frame_names():
+
+            element = self.kinematic_tree.frames_dict[name]
+
+            assert element.name() == name
+            assert element._source.pose.relative_to not in {"", None}
+
+            # Get the pose of the frame in which the frame's pose is expressed.
+            x_H_F = element._source.pose.transform()
+            W_H_x = self.transform(name=element._source.pose.relative_to)
+
+            # Compute the world transform of the frame.
+            W_H_F = W_H_x @ x_H_F
+            return W_H_F
 
         raise ValueError(name)
 
