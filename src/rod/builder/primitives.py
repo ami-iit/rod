@@ -1,4 +1,9 @@
 import dataclasses
+import pathlib
+from typing import Union
+
+import trimesh
+from numpy.typing import NDArray
 
 import rod
 from rod.builder.primitive_builder import PrimitiveBuilder
@@ -54,3 +59,52 @@ class CylinderBuilder(PrimitiveBuilder):
         return rod.Geometry(
             cylinder=rod.Cylinder(radius=self.radius, length=self.length)
         )
+
+
+@dataclasses.dataclass
+class MeshBuilder(PrimitiveBuilder):
+    mesh_path: Union[str, pathlib.Path]
+    scale: NDArray
+
+    def __post_init__(self) -> None:
+        """
+        Post-initialization method for the class.
+        Loads the mesh from the specified file path and performs necessary checks.
+
+        Raises:
+            AssertionError: If the scale is not a 3D vector.
+            TypeError: If the mesh_path is not a str or pathlib.Path.
+        """
+
+        if isinstance(self.mesh_path, str):
+            extension = pathlib.Path(self.mesh_path).suffix
+        elif isinstance(self.mesh_path, pathlib.Path):
+            extension = self.mesh_path.suffix
+        else:
+            raise TypeError(
+                f"Expected str or pathlib.Path for mesh_path, got {type(self.mesh_path)}"
+            )
+
+        self.mesh: trimesh.base.Trimesh = trimesh.load(
+            str(self.mesh_path),
+            force="mesh",
+            file_type=extension,
+        )
+
+        assert self.scale.shape == (
+            3,
+        ), f"Scale must be a 3D vector, got {self.scale.shape}"
+
+    def _inertia(self) -> rod.Inertia:
+        inertia = self.mesh.moment_inertia
+        return rod.Inertia(
+            ixx=inertia[0, 0],
+            ixy=inertia[0, 1],
+            ixz=inertia[0, 2],
+            iyy=inertia[1, 1],
+            iyz=inertia[1, 2],
+            izz=inertia[2, 2],
+        )
+
+    def _geometry(self) -> rod.Geometry:
+        return rod.Geometry(mesh=rod.Mesh(uri=str(self.mesh_path), scale=self.scale))

@@ -122,7 +122,8 @@ jobs:
             pptree \
             idyntree \
             pytest \
-            robot_descriptions
+            robot_descriptions \
+            trimesh
             # pytest-icdiff \  # creates problems on macOS
           mamba install -y gz-sim7 idyntree
 
