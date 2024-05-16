@@ -76,6 +76,7 @@ class UrdfExporter(abc.ABC):
 
         # Get the model
         model = sdf if isinstance(sdf, rod.Model) else sdf.models()[0]
+        logging.debug(f"Converting model '{model.name}' to URDF")
 
         # Remove all poses that could be assumed being implicit
         model.resolve_frames(is_top_level=True, explicit_frames=False)
@@ -102,6 +103,7 @@ class UrdfExporter(abc.ABC):
             model.pose = None
 
         # Get the canonical link of the model
+        logging.debug(f"Detected '{model.get_canonical_link()}' as root link")
         canonical_link: rod.Link = {l.name: l for l in model.links()}[
             model.get_canonical_link()
         ]
@@ -220,6 +222,7 @@ class UrdfExporter(abc.ABC):
 
         # Check that all fixed joints to preserve are actually present in the model.
         for fixed_joint_name in gazebo_preserve_fixed_joints:
+            logging.debug(f"Preserving fixed joint '{fixed_joint_name}'")
             all_model_joint_names = {j.name for j in model.joints()}
             if fixed_joint_name not in all_model_joint_names:
                 raise RuntimeError(f"Joint '{fixed_joint_name}' not found in the model")
