@@ -149,21 +149,9 @@ class UrdfExporter(abc.ABC):
         # Since URDF does not support plain frames as SDF, we convert all frames
         # to (fixed_joint->dummy_link) sequences
         for frame in model.frames():
-            # Find the name of the first parent link of a frame (since a frame could be
-            # attached to another frame). Falls back to __model__ in case of failure.
-            parent_link_name = UrdfExporter._find_parent_link(frame=frame, model=model)
-
-            # Populate a new Pose with the transform between the link to which the fixed
-            # joint will be attached and the frame that will be converted to dummy link
-            new_link_pose = rod.Pose.from_transform(
-                transform=tree_transforms.relative_transform(
-                    relative_to=parent_link_name, name=frame.name
-                ),
-                relative_to=parent_link_name,
-            )
 
             # New dummy link with same name of the frame
-            new_link = {
+            dummy_link = {
                 "@name": frame.name,
                 "inertial": {
                     "origin": {
@@ -182,19 +170,33 @@ class UrdfExporter(abc.ABC):
                 },
             }
 
-            # New joint connecting the detected parent link to the new link
+            # Note: the pose of the frame in FrameConvention.Urdf already
+            # refers to the parent link, so we can directly use it.
+            assert frame.pose.relative_to == frame.attached_to
+
+            # New joint connecting the link to which the frame is attached
+            # to the new dummy link.
             new_joint = {
-                "@name": f"{parent_link_name}_to_{new_link['@name']}",
+                "@name": f"{frame.attached_to}_to_{dummy_link['@name']}",
                 "@type": "fixed",
-                "parent": {"@link": parent_link_name},
-                "child": {"@link": new_link["@name"]},
+                "parent": {"@link": frame.attached_to},
+                "child": {"@link": dummy_link["@name"]},
                 "origin": {
-                    "@xyz": " ".join(np.array(new_link_pose.xyz, dtype=str)),
-                    "@rpy": " ".join(np.array(new_link_pose.rpy, dtype=str)),
+                    "@xyz": " ".join(np.array(frame.pose.xyz, dtype=str)),
+                    "@rpy": " ".join(np.array(frame.pose.rpy, dtype=str)),
                 },
             }
 
-            extra_links_from_frames.append(new_link)
+            logging.debug(
+                "Processing frame '{}': created new dummy chain {}->({})->{}".format(
+                    frame.name,
+                    frame.attached_to,
+                    new_joint["@name"],
+                    dummy_link["@name"],
+                )
+            )
+
+            extra_links_from_frames.append(dummy_link)
             extra_joints_from_frames.append(new_joint)
 
         # =====================
@@ -411,50 +413,6 @@ class UrdfExporter(abc.ABC):
             indent=self.indent,
             short_empty_elements=True,
         )
-
-    @staticmethod
-    def _find_parent_link(frame: rod.Frame, model: rod.Model) -> str:
-        links_dict = {l.name: l for l in model.links()}
-        frames_dict = {f.name: f for f in model.frames()}
-        joints_dict = {j.name: j for j in model.joints()}
-        sub_models_dict = {m.name: m for m in model.models()}
-
-        parent = frame
-
-        # SDF frames can be attached to links, joints, the model, or other frames.
-        # - link: consider it as parent
-        # - joint: consider its child as parent (child because is rigidly attached)
-        # - model: consider the canonical link as parent
-        # - frame: recursive call to find its parent
-        while True:
-            if isinstance(parent, rod.Frame) and not parent.name == frame.name:
-                return UrdfExporter._find_parent_link(frame=parent, model=model)
-
-            if isinstance(parent, rod.Link):
-                return parent.name
-
-            if isinstance(parent, rod.Joint):
-                return parent.child
-
-            parent_name = frame.attached_to
-
-            if parent_name in links_dict:
-                parent = links_dict[parent_name]
-
-            elif parent_name in joints_dict:
-                parent = joints_dict[parent_name]
-
-            elif parent_name in frames_dict:
-                parent = frames_dict[parent_name]
-
-            elif parent_name == model.name:
-                return "__model__"
-
-            elif parent_name in sub_models_dict:
-                raise RuntimeError("Model composition not yet supported")
-
-            else:
-                raise RuntimeError(f"Failed to find element with name '{parent_name}'")
 
     @staticmethod
     def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> Dict[str, Any]:
