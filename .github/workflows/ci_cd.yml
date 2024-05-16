@@ -152,10 +152,8 @@ jobs:
         run: python -c "import rod"
 
       - uses: actions/checkout@v3
-        if: matrix.os != 'windows-latest'
 
       - name: Run tests
-        if: matrix.os != 'windows-latest'
         run: pytest
 
   publish:
