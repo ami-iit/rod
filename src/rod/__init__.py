@@ -23,8 +23,16 @@ from .sdf.visual import Visual
 from .sdf.world import World
 from .utils.frame_convention import FrameConvention
 
+# ===============================
+# Configure the logging verbosity
+# ===============================
+
 
 def _is_editable():
+    """
+    Check if the rod package is installed in editable mode.
+    """
+
     import importlib.util
     import pathlib
     import site
@@ -43,7 +51,7 @@ def _is_editable():
     return rod_package_dir not in site.getsitepackages()
 
 
-# Initialize the logging verbosity
+# Initialize the logging verbosity depending on the installation mode.
 logging.configure(
     level=logging.LoggingLevel.DEBUG if _is_editable() else logging.LoggingLevel.WARNING
 )
