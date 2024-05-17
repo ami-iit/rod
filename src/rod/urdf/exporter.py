@@ -166,7 +166,7 @@ class UrdfExporter(abc.ABC):
                         "@ixy": 0.0,
                         "@ixz": 0.0,
                         "@iyy": 0.0,
-                        "@iyz": 0,
+                        "@iyz": 0.0,
                         "@izz": 0.0,
                     },
                 },
