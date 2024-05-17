@@ -64,22 +64,21 @@ def get_default_logging_level(env_var: str) -> logging.LoggingLevel:
 
     import os
 
+    # Define the default logging level depending on the installation mode.
+    default_logging_level = (
+        logging.LoggingLevel.DEBUG
+        if installation_is_editable()
+        else logging.LoggingLevel.WARNING
+    )
+
+    # Allow to override the default logging level with an environment variable.
     try:
-        return logging.LoggingLevel[os.environ[env_var].upper()]
-
-    # Raise if the environment variable is set but the logging level is invalid.
-    except AttributeError:
-        msg = f"Invalid logging level defined in {env_var}: '{os.environ[env_var]}'"
-        raise ValueError(msg)
-
-    # If the environment variable is not set, return the logging level depending
-    # on the installation mode.
-    except KeyError:
-        return (
-            logging.LoggingLevel.DEBUG
-            if installation_is_editable()
-            else logging.LoggingLevel.WARNING
-        )
+        return logging.LoggingLevel[
+            os.environ.get(env_var, default_logging_level.name).upper()
+        ]
+    except KeyError as exc:
+        msg = f"Invalid logging level defined in {env_var}='{os.environ[env_var]}'"
+        raise RuntimeError(msg) from exc
 
 
 # Configure the logger with the default logging level.
