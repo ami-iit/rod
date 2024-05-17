@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import dataclasses
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import mashumaro
 
@@ -54,13 +56,13 @@ class Model(Element):
 
     pose: Optional[Pose] = dataclasses.field(default=None)
 
-    model: Optional[Union["Model", List["Model"]]] = dataclasses.field(default=None)
+    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
 
-    frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
+    frame: Optional[Frame | List[Frame]] = dataclasses.field(default=None)
 
-    link: Optional[Union[Link, List[Link]]] = dataclasses.field(default=None)
+    link: Optional[Link | List[Link]] = dataclasses.field(default=None)
 
-    joint: Optional[Union[Joint, List[Joint]]] = dataclasses.field(default=None)
+    joint: Optional[Joint | List[Joint]] = dataclasses.field(default=None)
 
     def is_fixed_base(self) -> bool:
         joints_having_world_parent = [j for j in self.joints() if j.parent == "world"]
@@ -80,7 +82,7 @@ class Model(Element):
 
         return self.links()[0].name
 
-    def models(self) -> List["Model"]:
+    def models(self) -> List[Model]:
         if self.model is None:
             return []
 
@@ -155,7 +157,7 @@ class Model(Element):
 
     def switch_frame_convention(
         self,
-        frame_convention: "rod.FrameConvention",
+        frame_convention: rod.FrameConvention,
         is_top_level: bool = True,
         explicit_frames: bool = True,
         attach_frames_to_links: bool = True,

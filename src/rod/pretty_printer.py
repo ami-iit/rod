@@ -30,7 +30,7 @@ class DataclassPrettyPrinter(abc.ABC):
         ]
 
         return (
-            f"[\n"
+            "[\n"
             + ",\n".join(f"{spacing_level}{el!s}" for el in list_str)
             + f",\n{spacing_level_up}]"
         )
@@ -45,26 +45,27 @@ class DataclassPrettyPrinter(abc.ABC):
         for field in dataclasses.fields(obj):
             attr = getattr(obj, field.name)
 
-            if attr is None or attr == "":
-                continue
+            match attr:
+                case None | "":
+                    continue
 
-            elif isinstance(attr, list):
-                list_str = DataclassPrettyPrinter.list_to_string(
-                    obj=attr, level=level + 1
-                )
-                serialization += [(field.name, list_str)]
-                continue
+                case list():
+                    list_str = DataclassPrettyPrinter.list_to_string(
+                        obj=attr, level=level + 1
+                    )
+                    serialization += [(field.name, list_str)]
+                    continue
 
-            elif dataclasses.is_dataclass(attr):
-                dataclass_str = DataclassPrettyPrinter.dataclass_to_str(
-                    obj=attr, level=level + 1
-                )
-                serialization += [(field.name, dataclass_str)]
-                continue
+                case _ if dataclasses.is_dataclass(attr):
+                    dataclass_str = DataclassPrettyPrinter.dataclass_to_str(
+                        obj=attr, level=level + 1
+                    )
+                    serialization += [(field.name, dataclass_str)]
+                    continue
 
-            else:
-                serialization += [(field.name, f"{attr!s}")]
-                continue
+                case _:
+                    serialization += [(field.name, f"{attr!s}")]
+                    continue
 
         spacing = " " * 4
         spacing_level = spacing * level

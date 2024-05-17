@@ -11,7 +11,7 @@ def resolve_local_uri(uri: str) -> pathlib.Path:
 
     try:
         return resolve_robotics_uri_py.resolve_robotics_uri(uri=uri)
-    except:
+    except FileNotFoundError:
         pass
 
     # Remove the prefix of the URI

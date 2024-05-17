@@ -1,7 +1,6 @@
 import enum
 import importlib
 import pathlib
-from typing import Union
 
 
 class Robot(enum.IntEnum):
@@ -38,7 +37,7 @@ class ModelFactory:
     """Factory class providing URDF files used by the tests."""
 
     @staticmethod
-    def get_model_description(robot: Union[Robot, str]) -> pathlib.Path:
+    def get_model_description(robot: Robot | str) -> pathlib.Path:
         """
         Get the URDF file of different robots.
 

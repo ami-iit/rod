@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import dataclasses
 import os
 import pathlib
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import mashumaro
 import packaging.specifiers
@@ -19,9 +21,9 @@ from .world import World
 class Sdf(Element):
     version: str = dataclasses.field(metadata=mashumaro.field_options(alias="@version"))
 
-    world: Optional[Union[World, List[World]]] = dataclasses.field(default=None)
+    world: Optional[World | List[World]] = dataclasses.field(default=None)
 
-    model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
+    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
 
     def worlds(self) -> List[World]:
         if self.world is None:
@@ -44,7 +46,7 @@ class Sdf(Element):
         return self.model
 
     @staticmethod
-    def load(sdf: Union[pathlib.Path, str], is_urdf: Optional[bool] = None) -> "Sdf":
+    def load(sdf: pathlib.Path | str, is_urdf: bool | None = None) -> Sdf:
         """
         Load an SDF resource.
 
@@ -80,7 +82,7 @@ class Sdf(Element):
             and len(sdf) <= MAX_PATH
             and pathlib.Path(sdf).is_file()
         ):
-            sdf_string = pathlib.Path(sdf).read_text()
+            sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
             is_urdf = (
                 is_urdf if is_urdf is not None else pathlib.Path(sdf).suffix == ".urdf"
             )
@@ -99,8 +101,8 @@ class Sdf(Element):
         # Parse the SDF to dict
         try:
             xml_dict = xmltodict.parse(xml_input=sdf_string)
-        except Exception:
-            raise ValueError("Failed to parse 'sdf' argument")
+        except Exception as exc:
+            raise exc("Failed to parse 'sdf' argument")
 
         # Look for the top-level <sdf> element
         try:

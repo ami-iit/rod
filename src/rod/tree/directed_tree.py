@@ -1,7 +1,7 @@
 import collections.abc
 import dataclasses
 import functools
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List
 
 from .tree_elements import DirectedTreeNode
 
@@ -33,7 +33,7 @@ class DirectedTree(collections.abc.Sequence):
     @staticmethod
     def breadth_first_search(
         root: DirectedTreeNode,
-        sort_children: Optional[Callable[[Any], Any]] = lambda node: node.name(),
+        sort_children: Callable[[Any], Any] | None = lambda node: node.name(),
     ) -> Iterable[DirectedTreeNode]:
         queue = [root]
 
@@ -69,8 +69,8 @@ class DirectedTree(collections.abc.Sequence):
         )
 
     def __getitem__(
-        self, key: Union[int, slice, str]
-    ) -> Union[DirectedTreeNode, List[DirectedTreeNode]]:
+        self, key: int | slice | str
+    ) -> DirectedTreeNode | List[DirectedTreeNode]:
         # Get the nodes' dictionary (already inserted in order following BFS)
         nodes_dict = self.nodes_dict
 
@@ -100,7 +100,7 @@ class DirectedTree(collections.abc.Sequence):
     def __reversed__(self) -> Iterable[DirectedTreeNode]:
         yield from reversed(self)
 
-    def __contains__(self, item: Union[str, DirectedTreeNode]) -> bool:
+    def __contains__(self, item: str | DirectedTreeNode) -> bool:
         if isinstance(item, str):
             return item in self.nodes_dict.keys()
 

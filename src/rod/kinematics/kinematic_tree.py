@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 import functools
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Tuple
 
 import numpy as np
 
@@ -12,7 +14,7 @@ from rod.tree import DirectedTree, DirectedTreeNode, TreeEdge, TreeFrame
 
 @dataclasses.dataclass(frozen=True)
 class KinematicTree(DirectedTree):
-    model: "rod.Model"
+    model: rod.Model
 
     joints: List[TreeEdge] = dataclasses.field(default_factory=list)
     frames: List[TreeFrame] = dataclasses.field(default_factory=list)
@@ -46,7 +48,7 @@ class KinematicTree(DirectedTree):
         return [joint.name() for joint in self.joints]
 
     @staticmethod
-    def build(model: "rod.Model", is_top_level: bool = True) -> "KinematicTree":
+    def build(model: rod.Model, is_top_level: bool = True) -> KinematicTree:
         logging.debug(msg=f"Building kinematic tree of model '{model.name}'")
 
         if model.model is not None:
@@ -199,7 +201,7 @@ class KinematicTree(DirectedTree):
             new_base_node, additional_frames = KinematicTree.remove_edge(
                 edge=world_to_base_edge, keep_parent=False
             )
-            assert any([f.name() == TreeFrame.WORLD for f in additional_frames])
+            assert any(f.name() == TreeFrame.WORLD for f in additional_frames)
 
             # Replace the former base node with the new base node
             nodes_links_dict[new_base_node.name()] = new_base_node

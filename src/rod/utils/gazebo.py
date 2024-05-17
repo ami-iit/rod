@@ -3,12 +3,16 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
-from typing import Union
 
 
 class GazeboHelper:
-    @staticmethod
-    def get_gazebo_executable() -> pathlib.Path:
+    _cached_executable: pathlib.Path = None
+
+    @classmethod
+    def get_gazebo_executable(cls) -> pathlib.Path:
+        if cls._cached_executable is not None:
+            return cls._cached_executable
+
         gz = shutil.which("gz")
         ign = shutil.which("ign")
 
@@ -25,25 +29,29 @@ class GazeboHelper:
             raise TypeError(executable)
 
         # Check if the sdf plugin of the simulator is installed
-        cp = subprocess.run([executable, "sdf", "--help"], capture_output=True)
-
-        if cp.returncode != 0:
+        try:
+            subprocess.run(
+                [executable, "sdf", "--help"], check=True, capture_output=True
+            )
+        except subprocess.CalledProcessError as e:
             msg = f"Failed to find 'sdf' command part of {executable} installation"
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from e
 
-        return executable
+        cls._cached_executable = executable
+
+        return cls._cached_executable
 
     @staticmethod
     def has_gazebo() -> bool:
         try:
             _ = GazeboHelper.get_gazebo_executable()
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod
     def process_model_description_with_sdformat(
-        model_description: Union[str, pathlib.Path]
+        model_description: str | pathlib.Path,
     ) -> str:
         # =============================
         # Select the correct input type
@@ -65,7 +73,9 @@ class GazeboHelper:
             and len(model_description) <= MAX_PATH
             and pathlib.Path(model_description).is_file()
         ):
-            model_description_string = pathlib.Path(model_description).read_text()
+            model_description_string = pathlib.Path(model_description).read_text(
+                encoding="utf-8"
+            )
 
         # Finally, it must be a SDF/URDF string
         else:
@@ -92,16 +102,20 @@ class GazeboHelper:
                 fp.write(model_description_string)
                 fp.close()
 
-            cp = subprocess.run(
-                [str(gazebo_executable), "sdf", "-p", fp.name],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-
-        if cp.returncode != 0:
-            print(cp.stdout)
-            raise RuntimeError("Failed to process the input with sdformat")
+            try:
+                cp = subprocess.run(
+                    [str(gazebo_executable), "sdf", "-p", fp.name],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    check=True,
+                )
+            except subprocess.CalledProcessError as e:
+                if e.returncode != 0:
+                    print(e.stdout)
+                    raise RuntimeError(
+                        "Failed to process the input with sdformat"
+                    ) from e
 
         # Get the resulting SDF string
         sdf_string = cp.stdout

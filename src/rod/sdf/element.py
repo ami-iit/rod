@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import mashumaro.config
 import mashumaro.mixins.dict
@@ -37,7 +37,7 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
         false_vals = {"0", "False", "false"}
         assert data in true_vals.union(false_vals)
 
-        return True if data in true_vals else False
+        return data in true_vals
 
     @staticmethod
     def serialize_float(data: float) -> str:
@@ -50,7 +50,7 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
         return " ".join(np.array(data, dtype=str))
 
     @staticmethod
-    def deserialize_list(data: str, length: Optional[int] = None) -> List[float]:
+    def deserialize_list(data: str, length: int | None = None) -> List[float]:
         assert isinstance(data, str)
         array = np.atleast_1d(np.array(data.split(sep=" "), dtype=float).squeeze())
 

@@ -115,9 +115,9 @@ def check_compatible_sdformat(specification_version: str) -> None:
 
     if not GazeboHelper.has_gazebo():
         return
-    else:
-        cmdline = GazeboHelper.get_gazebo_executable()
-        logging.info(f"Calling sdformat through '{cmdline} sdf'")
+
+    cmdline = GazeboHelper.get_gazebo_executable()
+    logging.info(f"Calling sdformat through '{cmdline} sdf'")
 
     output_sdf_version = packaging.version.Version(
         xmltodict.parse(
