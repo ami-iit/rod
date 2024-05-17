@@ -111,6 +111,7 @@ jobs:
 
       - name: Install conda dependencies
         if: matrix.type == 'conda'
+        # Note: pytest-icdiff creates problems on macOS.
         run: |
           mamba install -y \
             coloredlogs \
@@ -119,6 +120,7 @@ jobs:
             packaging \
             resolve-robotics-uri-py \
             scipy \
+            trimesh \
             xmltodict \
             black \
             isort \
@@ -126,9 +128,8 @@ jobs:
             idyntree \
             pytest \
             robot_descriptions \
-            trimesh
-            # pytest-icdiff \  # creates problems on macOS
-          mamba install -y gz-sim7 idyntree
+            libgz-tools2 \
+            libsdformat13
 
       - name: Download Python packages
         uses: actions/download-artifact@v3
