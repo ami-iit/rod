@@ -20,12 +20,12 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.*"
 
@@ -50,7 +50,7 @@ jobs:
           python -c "import packaging.version as v; v.Version(\"$(python -m setuptools_scm)\")"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: dist/*
           name: dist
@@ -86,11 +86,11 @@ jobs:
 
       - name: Set up Python
         if: matrix.type == 'apt'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         if: matrix.type == 'conda'
         with:
           python-version: ${{ matrix.python }}
@@ -132,7 +132,7 @@ jobs:
             libsdformat13
 
       - name: Download Python packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: dist
           name: dist
@@ -153,7 +153,7 @@ jobs:
         env:
           ROD_LOGGING_LEVEL: DEBUG
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run tests
         run: pytest
@@ -168,7 +168,7 @@ jobs:
     steps:
 
       - name: Download Python packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: dist
           name: dist
