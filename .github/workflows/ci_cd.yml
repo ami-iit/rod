@@ -20,12 +20,12 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.*"
 
@@ -50,7 +50,7 @@ jobs:
           python -c "import packaging.version as v; v.Version(\"$(python -m setuptools_scm)\")"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: dist/*
           name: dist
@@ -73,10 +73,9 @@ jobs:
           - apt
           - conda
         python:
-          - "3.8"
-          - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
         exclude:
           - os: macos-latest
             type: apt
@@ -87,15 +86,14 @@ jobs:
 
       - name: Set up Python
         if: matrix.type == 'apt'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         if: matrix.type == 'conda'
         with:
           python-version: ${{ matrix.python }}
-          miniforge-variant: Mambaforge
           miniforge-version: latest
           channels: conda-forge
           channel-priority: true
@@ -112,14 +110,16 @@ jobs:
 
       - name: Install conda dependencies
         if: matrix.type == 'conda'
+        # Note: pytest-icdiff creates problems on macOS.
         run: |
-          mamba install -y \
+          conda install -y \
             coloredlogs \
             mashumaro \
             numpy \
             packaging \
             resolve-robotics-uri-py \
             scipy \
+            trimesh \
             xmltodict \
             black \
             isort \
@@ -127,12 +127,11 @@ jobs:
             idyntree \
             pytest \
             robot_descriptions \
-            trimesh
-            # pytest-icdiff \  # creates problems on macOS
-          mamba install -y gz-sim7 idyntree
+            libgz-tools2 \
+            libsdformat13
 
       - name: Download Python packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: dist
           name: dist
@@ -150,13 +149,15 @@ jobs:
 
       - name: Import the package
         run: python -c "import rod"
+        env:
+          ROD_LOGGING_LEVEL: DEBUG
 
-      - uses: actions/checkout@v3
-        if: matrix.os != 'windows-latest'
+      - uses: actions/checkout@v4
 
       - name: Run tests
-        if: matrix.os != 'windows-latest'
         run: pytest
+        env:
+          ROD_LOGGING_LEVEL: DEBUG
 
   publish:
     name: Publish to PyPI
@@ -166,7 +167,7 @@ jobs:
     steps:
 
       - name: Download Python packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: dist
           name: dist
