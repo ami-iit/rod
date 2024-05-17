@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import abc
 import dataclasses
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -14,7 +16,7 @@ class PrimitiveBuilder(abc.ABC):
     name: str
     mass: float
 
-    element: Union[rod.Model, rod.Link, rod.Inertial, rod.Collision, rod.Visual] = (
+    element: rod.Model | rod.Link | rod.Inertial | rod.Collision | rod.Visual = (
         dataclasses.field(
             default=None, init=False, repr=False, hash=False, compare=False
         )
@@ -22,7 +24,7 @@ class PrimitiveBuilder(abc.ABC):
 
     def build(
         self,
-    ) -> Union[rod.Model, rod.Link, rod.Inertial, rod.Collision, rod.Visual]:
+    ) -> rod.Model | rod.Link | rod.Inertial | rod.Collision | rod.Visual:
         return self.element
 
     # ================
@@ -43,9 +45,9 @@ class PrimitiveBuilder(abc.ABC):
 
     def build_model(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
-    ) -> "PrimitiveBuilder":
+        name: str | None = None,
+        pose: rod.Pose | None = None,
+    ) -> PrimitiveBuilder:
         self._check_element()
 
         self.element = self._model(name=name, pose=pose)
@@ -54,16 +56,16 @@ class PrimitiveBuilder(abc.ABC):
 
     def build_link(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
-    ) -> "PrimitiveBuilder":
+        name: str | None = None,
+        pose: rod.Pose | None = None,
+    ) -> PrimitiveBuilder:
         self._check_element()
 
         self.element = self._link(name=name, pose=pose)
 
         return self
 
-    def build_inertial(self, pose: Optional[rod.Pose] = None) -> "PrimitiveBuilder":
+    def build_inertial(self, pose: rod.Pose | None = None) -> PrimitiveBuilder:
         self._check_element()
 
         self.element = self._inertial(pose=pose)
@@ -72,9 +74,9 @@ class PrimitiveBuilder(abc.ABC):
 
     def build_visual(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
-    ) -> "PrimitiveBuilder":
+        name: str | None = None,
+        pose: rod.Pose | None = None,
+    ) -> PrimitiveBuilder:
         self._check_element()
 
         self.element = self._visual(name=name, pose=pose)
@@ -83,9 +85,9 @@ class PrimitiveBuilder(abc.ABC):
 
     def build_collision(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
-    ) -> "PrimitiveBuilder":
+        name: str | None = None,
+        pose: rod.Pose | None = None,
+    ) -> PrimitiveBuilder:
         self._check_element()
 
         self.element = self._collision(name=name, pose=pose)
@@ -98,10 +100,10 @@ class PrimitiveBuilder(abc.ABC):
 
     def add_link(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
-        link: Optional[rod.Link] = None,
-    ) -> "PrimitiveBuilder":
+        name: str | None = None,
+        pose: rod.Pose | None = None,
+        link: rod.Link | None = None,
+    ) -> PrimitiveBuilder:
         if not isinstance(self.element, rod.Model):
             raise ValueError(type(self.element))
 
@@ -116,9 +118,9 @@ class PrimitiveBuilder(abc.ABC):
 
     def add_inertial(
         self,
-        pose: Optional[rod.Pose] = None,
-        inertial: Optional[rod.Inertial] = None,
-    ) -> "PrimitiveBuilder":
+        pose: rod.Pose | None = None,
+        inertial: rod.Inertial | None = None,
+    ) -> PrimitiveBuilder:
         if not isinstance(self.element, (rod.Model, rod.Link)):
             raise ValueError(type(self.element))
 
@@ -144,11 +146,11 @@ class PrimitiveBuilder(abc.ABC):
 
     def add_visual(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         use_inertial_pose: bool = True,
-        pose: Optional[rod.Pose] = None,
-        visual: Optional[rod.Visual] = None,
-    ) -> "PrimitiveBuilder":
+        pose: rod.Pose | None = None,
+        visual: rod.Visual | None = None,
+    ) -> PrimitiveBuilder:
         if not isinstance(self.element, (rod.Model, rod.Link)):
             raise ValueError(type(self.element))
 
@@ -180,11 +182,11 @@ class PrimitiveBuilder(abc.ABC):
 
     def add_collision(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         use_inertial_pose: bool = True,
-        pose: Optional[rod.Pose] = None,
-        collision: Optional[rod.Collision] = None,
-    ) -> "PrimitiveBuilder":
+        pose: rod.Pose | None = None,
+        collision: rod.Collision | None = None,
+    ) -> PrimitiveBuilder:
         if not isinstance(self.element, (rod.Model, rod.Link)):
             raise ValueError(type(self.element))
 
@@ -224,8 +226,8 @@ class PrimitiveBuilder(abc.ABC):
 
     def _model(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
+        name: str | None = None,
+        pose: rod.Pose | None = None,
     ) -> rod.Model:
         name = name if name is not None else self.name
         logging.debug(f"Building model '{name}'")
@@ -240,15 +242,15 @@ class PrimitiveBuilder(abc.ABC):
 
     def _link(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
+        name: str | None = None,
+        pose: rod.Pose | None = None,
     ) -> rod.Link:
         return rod.Link(
             name=name if name is not None else f"{self.name}_link",
             pose=pose,
         )
 
-    def _inertial(self, pose: Optional[rod.Pose] = None) -> rod.Inertial:
+    def _inertial(self, pose: rod.Pose | None = None) -> rod.Inertial:
         return rod.Inertial(
             pose=pose,
             mass=self.mass,
@@ -257,8 +259,8 @@ class PrimitiveBuilder(abc.ABC):
 
     def _visual(
         self,
-        name: Optional[str] = None,
-        pose: Optional[rod.Pose] = None,
+        name: str | None = None,
+        pose: rod.Pose | None = None,
     ) -> rod.Visual:
         name = name if name is not None else f"{self.name}_visual"
 
@@ -271,7 +273,7 @@ class PrimitiveBuilder(abc.ABC):
     def _collision(
         self,
         name: Optional[str],
-        pose: Optional[rod.Pose] = None,
+        pose: rod.Pose | None = None,
     ) -> rod.Collision:
         name = name if name is not None else f"{self.name}_collision"
 
@@ -297,7 +299,7 @@ class PrimitiveBuilder(abc.ABC):
         relative_to: str = None,
         degrees: bool = None,
         rotation_format: str = None,
-    ) -> Optional[rod.Pose]:
+    ) -> rod.Pose | None:
         if pos is None and rpy is None:
             return rod.Pose.from_transform(transform=np.eye(4), relative_to=relative_to)
 

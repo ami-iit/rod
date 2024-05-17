@@ -1,6 +1,5 @@
 import dataclasses
 import pathlib
-from typing import Union
 
 import trimesh
 from numpy.typing import NDArray
@@ -63,7 +62,7 @@ class CylinderBuilder(PrimitiveBuilder):
 
 @dataclasses.dataclass
 class MeshBuilder(PrimitiveBuilder):
-    mesh_path: Union[str, pathlib.Path]
+    mesh_path: str | pathlib.Path
     scale: NDArray
 
     def __post_init__(self) -> None:

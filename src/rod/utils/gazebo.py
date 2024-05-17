@@ -3,7 +3,6 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
-from typing import Union
 
 
 class GazeboHelper:
@@ -52,7 +51,7 @@ class GazeboHelper:
 
     @staticmethod
     def process_model_description_with_sdformat(
-        model_description: Union[str, pathlib.Path]
+        model_description: str | pathlib.Path,
     ) -> str:
         # =============================
         # Select the correct input type

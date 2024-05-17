@@ -1,5 +1,5 @@
 import dataclasses
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import mashumaro
 
@@ -34,9 +34,9 @@ class World(Element):
 
     scene: Scene = dataclasses.field(default_factory=Scene)
 
-    model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
+    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
 
-    frame: Optional[Union[Frame, List[Frame]]] = dataclasses.field(default=None)
+    frame: Optional[Frame | List[Frame]] = dataclasses.field(default=None)
 
     def models(self) -> List[Model]:
         if self.model is None:

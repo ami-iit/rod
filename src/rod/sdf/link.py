@@ -1,5 +1,5 @@
 import dataclasses
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import mashumaro
 import numpy as np
@@ -73,11 +73,9 @@ class Link(Element):
 
     inertial: Optional[Inertial] = dataclasses.field(default=None)
 
-    visual: Optional[Union[Visual, List[Visual]]] = dataclasses.field(default=None)
+    visual: Optional[Visual | List[Visual]] = dataclasses.field(default=None)
 
-    collision: Optional[Union[Collision, List[Collision]]] = dataclasses.field(
-        default=None
-    )
+    collision: Optional[Collision | List[Collision]] = dataclasses.field(default=None)
 
     gravity: Optional[bool] = dataclasses.field(
         default=None,

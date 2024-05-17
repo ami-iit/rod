@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import functools
-from typing import List, Union
+from typing import List
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from rod.sdf.element import Element
 
 
 def update_element_with_pose(
-    element: Element, default_relative_to: Union[str, List[str]], explicit_frames: bool
+    element: Element, default_relative_to: str | List[str], explicit_frames: bool
 ) -> None:
     if not hasattr(element, "pose"):
         raise ValueError("The input element has no 'pose' attribute")

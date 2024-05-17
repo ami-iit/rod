@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import dataclasses
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional
 
 import rod
 from rod import logging
@@ -90,7 +90,7 @@ class TreeFrame(TreeElement):
     WORLD: ClassVar[str] = "world"
     MODEL: ClassVar[str] = "__model__"
 
-    _source: Optional["rod.Frame"] = dataclasses.field(default=None, repr=False)
+    _source: Optional[rod.Frame] = dataclasses.field(default=None, repr=False)
 
     def name(self) -> str:
         return self._source.name
@@ -111,7 +111,7 @@ class TreeFrame(TreeElement):
     @staticmethod
     def from_node(
         node: DirectedTreeNode,
-        attached_to: Union[DirectedTreeNode, TreeFrame, TreeEdge] = None,
+        attached_to: DirectedTreeNode | TreeFrame | TreeEdge | None = None,
     ) -> TreeFrame:
         attached_to = attached_to if attached_to is not None else node.parent
 
@@ -130,7 +130,7 @@ class TreeFrame(TreeElement):
     @staticmethod
     def from_edge(
         edge: TreeEdge,
-        attached_to: Union[DirectedTreeNode, TreeFrame, TreeEdge] = None,
+        attached_to: DirectedTreeNode | TreeFrame | TreeEdge | None = None,
     ) -> TreeFrame:
         attached_to = attached_to if attached_to is not None else edge.parent
 

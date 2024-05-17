@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import os
 import pathlib
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import mashumaro
 import packaging.specifiers
@@ -21,9 +21,9 @@ from .world import World
 class Sdf(Element):
     version: str = dataclasses.field(metadata=mashumaro.field_options(alias="@version"))
 
-    world: Optional[Union[World, List[World]]] = dataclasses.field(default=None)
+    world: Optional[World | List[World]] = dataclasses.field(default=None)
 
-    model: Optional[Union[Model, List[Model]]] = dataclasses.field(default=None)
+    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
 
     def worlds(self) -> List[World]:
         if self.world is None:
@@ -46,7 +46,7 @@ class Sdf(Element):
         return self.model
 
     @staticmethod
-    def load(sdf: Union[pathlib.Path, str], is_urdf: Optional[bool] = None) -> Sdf:
+    def load(sdf: pathlib.Path | str, is_urdf: bool | None = None) -> Sdf:
         """
         Load an SDF resource.
 

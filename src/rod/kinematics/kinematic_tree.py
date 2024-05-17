@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import functools
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Tuple
 
 import numpy as np
 
