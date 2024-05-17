@@ -28,7 +28,7 @@ from .utils.frame_convention import FrameConvention
 # ===============================
 
 
-def _is_editable():
+def installation_is_editable():
     """
     Check if the rod package is installed in editable mode.
     """
@@ -51,12 +51,42 @@ def _is_editable():
     return rod_package_dir not in site.getsitepackages()
 
 
-# Initialize the logging verbosity depending on the installation mode.
-logging.configure(
-    level=logging.LoggingLevel.DEBUG if _is_editable() else logging.LoggingLevel.WARNING
-)
+def get_default_logging_level(env_var: str) -> logging.LoggingLevel:
+    """
+    Get the default logging level.
 
-del _is_editable
+    Args:
+        env_var: The environment variable to check.
+
+    Returns:
+        The logging level to set.
+    """
+
+    import os
+
+    try:
+        return logging.LoggingLevel[os.environ[env_var].upper()]
+
+    # Raise if the environment variable is set but the logging level is invalid.
+    except AttributeError:
+        msg = f"Invalid logging level defined in {env_var}: '{os.environ[env_var]}'"
+        raise ValueError(msg)
+
+    # If the environment variable is not set, return the logging level depending
+    # on the installation mode.
+    except KeyError:
+        return (
+            logging.LoggingLevel.DEBUG
+            if installation_is_editable()
+            else logging.LoggingLevel.WARNING
+        )
+
+
+# Configure the logger with the default logging level.
+logging.configure(level=get_default_logging_level(env_var="ROD_LOGGING_LEVEL"))
+
+del installation_is_editable
+del get_default_logging_level
 
 # =====================================
 # Check for compatible sdformat version
