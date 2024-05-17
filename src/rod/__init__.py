@@ -49,3 +49,52 @@ logging.configure(
 )
 
 del _is_editable
+
+# =====================================
+# Check for compatible sdformat version
+# =====================================
+
+
+def check_compatible_sdformat(specification_version: str) -> None:
+    """
+    Check if the installed sdformat version produces SDF files compatible with ROD.
+
+    Args:
+        specification_version: The minimum required SDF specification version.
+
+    Note:
+        This check runs only if sdformat is installed in the system.
+    """
+
+    import os
+
+    import packaging.version
+    import xmltodict
+
+    from rod.utils.gazebo import GazeboHelper
+
+    if os.environ.get("ROD_SKIP_SDFORMAT_CHECK", "0") == "1":
+        return
+
+    if not GazeboHelper.has_gazebo():
+        return
+    else:
+        cmdline = GazeboHelper.get_gazebo_executable()
+        logging.info(f"Calling sdformat through '{cmdline} sdf'")
+
+    output_sdf_version = packaging.version.Version(
+        xmltodict.parse(
+            xml_input=GazeboHelper.process_model_description_with_sdformat(
+                model_description="<sdf version='1.4'/>"
+            )
+        )["sdf"]["@version"]
+    )
+
+    if output_sdf_version < packaging.version.Version(specification_version):
+        msg = "The found sdformat installation only supports the '{}' specification, "
+        msg += "while ROD requires at least the '{}' specification."
+        raise RuntimeError(msg.format(output_sdf_version, specification_version))
+
+
+check_compatible_sdformat(specification_version="1.10")
+del check_compatible_sdformat
