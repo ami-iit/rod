@@ -1,6 +1,7 @@
 import abc
 import copy
-from typing import Any, Dict, List, Union
+import dataclasses
+from typing import Any, ClassVar, Dict, List, Set, Union
 
 import numpy as np
 import xmltodict
@@ -10,11 +11,29 @@ from rod import logging
 from rod.kinematics.tree_transforms import TreeTransforms
 
 
+@dataclasses.dataclass
 class UrdfExporter(abc.ABC):
+    """Resources to convert an in-memory ROD model to URDF."""
 
-    SupportedSdfJointTypes = {"revolute", "continuous", "prismatic", "fixed"}
+    # The string to use for each indentation level.
+    indent: str = "  "
 
-    DefaultMaterial = {
+    # Whether to include indentation and newlines in the output.
+    pretty: bool = False
+
+    # Whether to inject additional `<gazebo>` elements in the resulting URDF
+    # to preserve fixed joints in case of re-loading into sdformat.
+    # If a list of strings is passed, only the listed fixed joints will be preserved.
+    gazebo_preserve_fixed_joints: Union[bool, List[str]] = False
+
+    SupportedSdfJointTypes: ClassVar[Set[str]] = {
+        "revolute",
+        "continuous",
+        "prismatic",
+        "fixed",
+    }
+
+    DefaultMaterial: ClassVar[Dict[str, Any]] = {
         "@name": "default_material",
         "color": {
             "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
@@ -23,22 +42,27 @@ class UrdfExporter(abc.ABC):
 
     @staticmethod
     def sdf_to_urdf_string(
-        sdf: rod.Sdf | rod.Model,
+        sdf: Union[rod.Sdf, rod.Model],
         pretty: bool = False,
         indent: str = "  ",
         gazebo_preserve_fixed_joints: Union[bool, List[str]] = False,
     ) -> str:
+
+        msg = "This method is deprecated, please use '{}' instead."
+        logging.warning(msg.format("UrdfExporter.to_urdf_string"))
+
+        return UrdfExporter(
+            pretty=pretty,
+            indent=indent,
+            gazebo_preserve_fixed_joints=gazebo_preserve_fixed_joints,
+        ).to_urdf_string(sdf=sdf)
+
+    def to_urdf_string(self, sdf: Union[rod.Sdf, rod.Model]) -> str:
         """
         Convert an in-memory SDF model to a URDF string.
 
         Args:
             sdf: The SDF model parsed by ROD to convert.
-            pretty: Whether to include indentation and newlines in the output.
-            indent: The string to use for each indentation level.
-            gazebo_preserve_fixed_joints: Whether to inject additional `<gazebo>` elements in the
-                resulting URDF to preserve fixed joints in case of re-loading into sdformat.
-                If a list of strings is passed, only the listed fixed joints will be preserved.
-                If `True` is passed, all fixed joints will be preserved.
 
         Returns:
             The URDF string representing the converted SDF model.
@@ -52,6 +76,7 @@ class UrdfExporter(abc.ABC):
 
         # Get the model
         model = sdf if isinstance(sdf, rod.Model) else sdf.models()[0]
+        logging.debug(f"Converting model '{model.name}' to URDF")
 
         # Remove all poses that could be assumed being implicit
         model.resolve_frames(is_top_level=True, explicit_frames=False)
@@ -78,6 +103,7 @@ class UrdfExporter(abc.ABC):
             model.pose = None
 
         # Get the canonical link of the model
+        logging.debug(f"Detected '{model.get_canonical_link()}' as root link")
         canonical_link: rod.Link = {l.name: l for l in model.links()}[
             model.get_canonical_link()
         ]
@@ -97,9 +123,13 @@ class UrdfExporter(abc.ABC):
             canonical_link.pose = None
 
         # Convert all poses to use the Urdf frames convention.
-        # This process drastically simplifies extracting compatible kinematic trasforms.
+        # This process drastically simplifies extracting compatible kinematic transforms.
+        # Furthermore, it post-processes frames such that they get directly attached to
+        # a real link (instead of being attached to other frames).
         model.switch_frame_convention(
-            frame_convention=rod.FrameConvention.Urdf, explicit_frames=True
+            frame_convention=rod.FrameConvention.Urdf,
+            explicit_frames=True,
+            attach_frames_to_links=True,
         )
 
         # ============================================
@@ -109,11 +139,7 @@ class UrdfExporter(abc.ABC):
         # Tree transforms helper used to process SDF frame poses, if any.
         # No need to switch frame convention to Urdf since it was already done above.
         tree_transforms = (
-            TreeTransforms.build(
-                model=model,
-                is_top_level=True,
-                prevent_switching_frame_convention=True,
-            )
+            TreeTransforms.build(model=model, is_top_level=True)
             if len(model.frames()) is not None
             else None
         )
@@ -125,75 +151,65 @@ class UrdfExporter(abc.ABC):
         # Since URDF does not support plain frames as SDF, we convert all frames
         # to (fixed_joint->dummy_link) sequences
         for frame in model.frames():
-            # Find the name of the first parent link of a frame (since a frame could be
-            # attached to another frame). Falls back to __model__ in case of failure.
-            parent_link_name = UrdfExporter._find_parent_link(frame=frame, model=model)
-
-            # Populate a new Pose with the transform between the link to which the fixed
-            # joint will be attached and the frame that will be converted to dummy link
-            new_link_pose = rod.Pose.from_transform(
-                transform=tree_transforms.relative_transform(
-                    relative_to=parent_link_name, name=frame.name
-                ),
-                relative_to=parent_link_name,
-            )
-
-            # Smallest value not ignored by sdformat
-            epsilon = 1e-6 + 1e-9
 
             # New dummy link with same name of the frame
-            new_link = {
+            dummy_link = {
                 "@name": frame.name,
-                # If the link has no inertial properties, parsing again the exported
-                # URDF model with SDF would ignore it.
-                # We need to add a tiny fake mass greater than 1e-6.
-                # https://github.com/gazebosim/sdformat/issues/199#issuecomment-622127508
                 "inertial": {
                     "origin": {
                         "@xyz": "0 0 0",
                         "@rpy": "0 0 0",
                     },
-                    "mass": {"@value": str(epsilon)},
+                    "mass": {"@value": 0.0},
                     "inertia": {
-                        "@ixx": str(epsilon),
-                        "@ixy": 0,
-                        "@ixz": 0,
-                        "@iyy": str(epsilon),
-                        "@iyz": 0,
-                        "@izz": str(epsilon),
+                        "@ixx": 0.0,
+                        "@ixy": 0.0,
+                        "@ixz": 0.0,
+                        "@iyy": 0.0,
+                        "@iyz": 0.0,
+                        "@izz": 0.0,
                     },
-                },
-                "visual": {
-                    "@name": f"{frame.name}_visual",
-                    "origin": {
-                        "@xyz": "0 0 0",
-                        "@rpy": "0 0 0",
-                    },
-                    "geometry": UrdfExporter._rod_geometry_to_xmltodict(
-                        geometry=rod.Geometry(sphere=rod.Sphere(radius=0.0))
-                    ),
                 },
             }
 
-            # New joint connecting the detected parent link to the new link
+            # Note: the pose of the frame in FrameConvention.Urdf already
+            # refers to the parent link, so we can directly use it.
+            assert frame.pose.relative_to == frame.attached_to
+
+            # New joint connecting the link to which the frame is attached
+            # to the new dummy link.
             new_joint = {
-                "@name": f"{parent_link_name}_to_{new_link['@name']}",
+                "@name": f"{frame.attached_to}_to_{dummy_link['@name']}",
                 "@type": "fixed",
-                "parent": {"@link": parent_link_name},
-                "child": {"@link": new_link["@name"]},
+                "parent": {"@link": frame.attached_to},
+                "child": {"@link": dummy_link["@name"]},
                 "origin": {
-                    "@xyz": " ".join(np.array(new_link_pose.xyz, dtype=str)),
-                    "@rpy": " ".join(np.array(new_link_pose.rpy, dtype=str)),
+                    "@xyz": " ".join(np.array(frame.pose.xyz, dtype=str)),
+                    "@rpy": " ".join(np.array(frame.pose.rpy, dtype=str)),
                 },
             }
 
-            extra_links_from_frames.append(new_link)
+            logging.debug(
+                "Processing frame '{}': created new dummy chain {}->({})->{}".format(
+                    frame.name,
+                    frame.attached_to,
+                    new_joint["@name"],
+                    dummy_link["@name"],
+                )
+            )
+
+            extra_links_from_frames.append(dummy_link)
             extra_joints_from_frames.append(new_joint)
 
         # =====================
         # Preserve fixed joints
         # =====================
 
+        # This attribute could either be list of fixed joint names to preserve,
+        # or a boolean to preserve all fixed joints.
+        gazebo_preserve_fixed_joints = copy.copy(self.gazebo_preserve_fixed_joints)
+
+        # If it is a boolean, automatically populate the list with all fixed joints.
         if gazebo_preserve_fixed_joints is True:
             gazebo_preserve_fixed_joints = [
                 j.name for j in model.joints() if j.type == "fixed"
@@ -203,6 +219,13 @@ class UrdfExporter(abc.ABC):
             gazebo_preserve_fixed_joints = []
 
         assert isinstance(gazebo_preserve_fixed_joints, list)
+
+        # Check that all fixed joints to preserve are actually present in the model.
+        for fixed_joint_name in gazebo_preserve_fixed_joints:
+            logging.debug(f"Preserving fixed joint '{fixed_joint_name}'")
+            all_model_joint_names = {j.name for j in model.joints()}
+            if fixed_joint_name not in all_model_joint_names:
+                raise RuntimeError(f"Joint '{fixed_joint_name}' not found in the model")
 
         # ===================
         # Convert SDF to URDF
@@ -378,14 +401,6 @@ class UrdfExporter(abc.ABC):
                 # https://github.com/gazebosim/sdformat/issues/199#issuecomment-622127508
                 "gazebo": [
                     {
-                        "@reference": extra_joint["@name"],
-                        "preserveFixedJoint": "true",
-                        "disableFixedJointLumping": "true",
-                    }
-                    for extra_joint in extra_joints_from_frames
-                ]
-                + [
-                    {
                         "@reference": fixed_joint,
                         "preserveFixedJoint": "true",
                         "disableFixedJointLumping": "true",
@@ -397,54 +412,10 @@ class UrdfExporter(abc.ABC):
 
         return xmltodict.unparse(
             input_dict=urdf_dict,
-            pretty=pretty,
-            indent=indent,
+            pretty=self.pretty,
+            indent=self.indent,
             short_empty_elements=True,
         )
-
-    @staticmethod
-    def _find_parent_link(frame: rod.Frame, model: rod.Model) -> str:
-        links_dict = {l.name: l for l in model.links()}
-        frames_dict = {f.name: f for f in model.frames()}
-        joints_dict = {j.name: j for j in model.joints()}
-        sub_models_dict = {m.name: m for m in model.models()}
-
-        parent = frame
-
-        # SDF frames can be attached to links, joints, the model, or other frames.
-        # - link: consider it as parent
-        # - joint: consider its child as parent (child because is rigidly attached)
-        # - model: consider the canonical link as parent
-        # - frame: recursive call to find its parent
-        while True:
-            if isinstance(parent, rod.Frame) and not parent.name == frame.name:
-                return UrdfExporter._find_parent_link(frame=parent, model=model)
-
-            if isinstance(parent, rod.Link):
-                return parent.name
-
-            if isinstance(parent, rod.Joint):
-                return parent.child
-
-            parent_name = frame.attached_to
-
-            if parent_name in links_dict:
-                parent = links_dict[parent_name]
-
-            elif parent_name in joints_dict:
-                parent = joints_dict[parent_name]
-
-            elif parent_name in frames_dict:
-                parent = frames_dict[parent_name]
-
-            elif parent_name == model.name:
-                return "__model__"
-
-            elif parent_name in sub_models_dict:
-                raise RuntimeError("Model composition not yet supported")
-
-            else:
-                raise RuntimeError(f"Failed to find element with name '{parent_name}'")
 
     @staticmethod
     def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> Dict[str, Any]:

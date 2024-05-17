@@ -78,9 +78,19 @@ class GazeboHelper:
         # Get the Gazebo Sim executable (raises exception if not found)
         gazebo_executable = GazeboHelper.get_gazebo_executable()
 
-        with tempfile.NamedTemporaryFile(mode="w+") as fp:
-            fp.write(model_description_string)
-            fp.seek(0)
+        # Operate on a file stored in a temporary directory.
+        # This is necessary on windows because the file has to be closed before
+        # it can be processed by the sdformat executable.
+        # As soon as 3.12 will be the minimum supported version, we can use just
+        # NamedTemporaryFile with the new delete_on_close=False parameter.
+        with tempfile.TemporaryDirectory() as tmp:
+
+            with tempfile.NamedTemporaryFile(
+                mode="w+", suffix=".xml", dir=tmp, delete=False
+            ) as fp:
+
+                fp.write(model_description_string)
+                fp.close()
 
             cp = subprocess.run(
                 [str(gazebo_executable), "sdf", "-p", fp.name],

@@ -69,7 +69,13 @@ def resolve_model_frames(
         update_element(element=model, default_relative_to="world")
 
     for frame in model.frames():
-        update_element(element=frame, default_relative_to=["__model__", model.name])
+        update_element(
+            element=frame,
+            default_relative_to=(
+                [frame.attached_to] if frame.attached_to is not None else []
+            )
+            + [model.get_canonical_link()],
+        )
 
     # Update the links and its children elements
     for link in model.links():

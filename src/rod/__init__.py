@@ -23,8 +23,16 @@ from .sdf.visual import Visual
 from .sdf.world import World
 from .utils.frame_convention import FrameConvention
 
+# ===============================
+# Configure the logging verbosity
+# ===============================
+
 
 def _is_editable():
+    """
+    Check if the rod package is installed in editable mode.
+    """
+
     import importlib.util
     import pathlib
     import site
@@ -43,9 +51,58 @@ def _is_editable():
     return rod_package_dir not in site.getsitepackages()
 
 
-# Initialize the logging verbosity
+# Initialize the logging verbosity depending on the installation mode.
 logging.configure(
     level=logging.LoggingLevel.DEBUG if _is_editable() else logging.LoggingLevel.WARNING
 )
 
 del _is_editable
+
+# =====================================
+# Check for compatible sdformat version
+# =====================================
+
+
+def check_compatible_sdformat(specification_version: str) -> None:
+    """
+    Check if the installed sdformat version produces SDF files compatible with ROD.
+
+    Args:
+        specification_version: The minimum required SDF specification version.
+
+    Note:
+        This check runs only if sdformat is installed in the system.
+    """
+
+    import os
+
+    import packaging.version
+    import xmltodict
+
+    from rod.utils.gazebo import GazeboHelper
+
+    if os.environ.get("ROD_SKIP_SDFORMAT_CHECK", "0") == "1":
+        return
+
+    if not GazeboHelper.has_gazebo():
+        return
+    else:
+        cmdline = GazeboHelper.get_gazebo_executable()
+        logging.info(f"Calling sdformat through '{cmdline} sdf'")
+
+    output_sdf_version = packaging.version.Version(
+        xmltodict.parse(
+            xml_input=GazeboHelper.process_model_description_with_sdformat(
+                model_description="<sdf version='1.4'/>"
+            )
+        )["sdf"]["@version"]
+    )
+
+    if output_sdf_version < packaging.version.Version(specification_version):
+        msg = "The found sdformat installation only supports the '{}' specification, "
+        msg += "while ROD requires at least the '{}' specification."
+        raise RuntimeError(msg.format(output_sdf_version, specification_version))
+
+
+check_compatible_sdformat(specification_version="1.10")
+del check_compatible_sdformat

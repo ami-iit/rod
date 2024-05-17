@@ -15,16 +15,63 @@ class FrameConvention(enum.IntEnum):
 
 
 def switch_frame_convention(
-    model: "rod.Model", frame_convention: FrameConvention, is_top_level: bool = True
+    model: "rod.Model",
+    frame_convention: FrameConvention,
+    is_top_level: bool = True,
+    attach_frames_to_links: bool = True,
 ) -> None:
+
     # Resolve all implicit reference frames using Sdf convention
     model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
+
+    # =============================
+    # Initialize forward kinematics
+    # =============================
+
+    from rod.kinematics.tree_transforms import TreeTransforms
+
+    # Create the object to compute the kinematics of the tree.
+    kin = TreeTransforms.build(model=model, is_top_level=is_top_level)
+
+    # =====================================
+    # Update frames to be attached to links
+    # =====================================
+
+    # Update the //frame/attached_to attribute of all frames so that they are
+    # directly attached to links.
+    if attach_frames_to_links:
+        for frame in model.frames():
+            # Find the link to which the frame is attached to following recursively
+            # the //frame/attached_to attribute.
+            parent_link = find_parent_link_of_frame(frame=frame, model=model)
+
+            # Compute the transform between the model and the frame.
+            model_H_frame = (
+                kin.relative_transform(
+                    relative_to="__model__", name=frame.pose.relative_to
+                )
+                @ frame.pose.transform()
+            )
+
+            # Compute the transform between the parent link and the model.
+            parent_link_H_model = kin.relative_transform(
+                relative_to=parent_link, name="__model__"
+            )
+
+            # Update the frame such that it is attached_to a link, populating the
+            # pose with the correct transform between the parent link and the frame.
+            frame.attached_to = parent_link
+            frame.pose = rod.Pose.from_transform(
+                relative_to=parent_link,
+                transform=parent_link_H_model @ model_H_frame,
+            )
 
     # =============================================================
     # Define the default reference frames of the different elements
     # =============================================================
 
     if frame_convention is FrameConvention.World:
+
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: "world"
         reference_frame_frames = lambda f: "world"
@@ -35,6 +82,7 @@ def switch_frame_convention(
         reference_frame_link_canonical = "world"
 
     elif frame_convention is FrameConvention.Model:
+
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: "__model__"
         reference_frame_frames = lambda f: "__model__"
@@ -45,6 +93,7 @@ def switch_frame_convention(
         reference_frame_link_canonical = "__model__"
 
     elif frame_convention is FrameConvention.Sdf:
+
         visual_name_to_parent_link = {
             visual_name: parent_link
             for d in [{v.name: link for v in link.visuals()} for link in model.links()]
@@ -61,7 +110,7 @@ def switch_frame_convention(
 
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: "__model__"
-        reference_frame_frames = lambda f: "__model__"
+        reference_frame_frames = lambda f: f.attached_to
         reference_frame_joints = lambda j: joint.child
         reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
         reference_frame_inertials = lambda i, parent_link: parent_link.name
@@ -71,6 +120,7 @@ def switch_frame_convention(
         reference_frame_link_canonical = "__model__"
 
     elif frame_convention is FrameConvention.Urdf:
+
         visual_name_to_parent_link = {
             visual_name: parent_link
             for d in [{v.name: link for v in link.visuals()} for link in model.links()]
@@ -98,7 +148,7 @@ def switch_frame_convention(
 
         reference_frame_model = lambda m: "world"
         reference_frame_links = lambda l: link_name_to_parent_joint_names[l.name][0]
-        reference_frame_frames = lambda f: "__model__"
+        reference_frame_frames = lambda f: f.attached_to
         reference_frame_joints = lambda j: j.parent
         reference_frame_visuals = lambda v: visual_name_to_parent_link[v.name].name
         reference_frame_inertials = lambda i, parent_link: parent_link.name
@@ -113,20 +163,13 @@ def switch_frame_convention(
             reference_frame_link_canonical = reference_frame_links(l=canonical_link)
         else:
             reference_frame_link_canonical = "__model__"
+
     else:
         raise ValueError(frame_convention)
 
     # =========================================
     # Process the reference frames of the model
     # =========================================
-
-    from rod.kinematics.tree_transforms import TreeTransforms
-
-    # Create the tree from the model, using the original frame convention
-    # (otherwise it would call this helper obtaining an infinite loop)
-    kin = TreeTransforms.build(
-        model=model, is_top_level=is_top_level, prevent_switching_frame_convention=True
-    )
 
     if is_top_level:
         assert model.pose.relative_to in {"", None}
@@ -168,8 +211,7 @@ def switch_frame_convention(
 
     # Adjust the reference frames of all frames
     for frame in model.frames():
-        x_H_frame = frame.pose.transform() if frame.pose is not None else np.eye(4)
-
+        x_H_frame = frame.pose.transform()
         target_H_x = kin.relative_transform(
             relative_to=reference_frame_frames(f=frame),
             name=frame.pose.relative_to,
@@ -235,3 +277,44 @@ def switch_frame_convention(
                 relative_to=reference_frame_collisions(c=collision),
                 transform=target_H_x @ x_H_collision,
             )
+
+
+def find_parent_link_of_frame(frame: rod.Frame, model: rod.Model) -> str:
+
+    links_dict = {l.name: l for l in model.links()}
+    frames_dict = {f.name: f for f in model.frames()}
+    joints_dict = {j.name: j for j in model.joints()}
+    sub_models_dict = {m.name: m for m in model.models()}
+
+    assert isinstance(frame, rod.Frame)
+
+    if frame.attached_to in links_dict:
+        parent = links_dict[frame.attached_to]
+
+    elif frame.attached_to in frames_dict:
+        parent = frames_dict[frame.attached_to]
+
+    elif frame.attached in {model.name, "__model__"}:
+        return model.get_canonical_link()
+
+    elif frame.attached_to in joints_dict:
+        raise ValueError("Frames cannot be attached to joints")
+
+    elif frame.attached_to in sub_models_dict:
+        raise RuntimeError("Model composition not yet supported")
+
+    else:
+        raise RuntimeError(f"Failed to find element with name '{frame.attached_to}'")
+
+    # At this point, the parent is either a link or another frame.
+    assert isinstance(parent, (rod.Link, rod.Frame))
+
+    # If the parent is a link, can stop searching.
+    if isinstance(parent, rod.Link):
+        return parent.name
+
+    # If the parent is another frame, keep looking for the parent link.
+    if isinstance(parent, rod.Frame):
+        return find_parent_link_of_frame(frame=parent, model=model)
+
+    raise RuntimeError("This recursive function should never arrive here.")
