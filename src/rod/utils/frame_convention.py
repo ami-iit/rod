@@ -299,7 +299,7 @@ def find_parent_link_of_frame(frame: rod.Frame, model: rod.Model) -> str:
         case anchor if anchor in frames_dict:
             parent = frames_dict[frame.attached_to]
 
-        case frame if frame.attached in {model.name, "__model__"}:
+        case anchor if anchor in {model.name, "__model__"}:
             return model.get_canonical_link()
 
         case anchor if anchor in joints_dict:
