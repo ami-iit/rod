@@ -46,7 +46,7 @@ class GazeboHelper:
         try:
             _ = GazeboHelper.get_gazebo_executable()
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod
@@ -108,10 +108,11 @@ class GazeboHelper:
                     text=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
+                    check=True,
                 )
             except subprocess.CalledProcessError as e:
-                if cp.returncode != 0:
-                    print(cp.stdout)
+                if e.returncode != 0:
+                    print(e.stdout)
                     raise RuntimeError(
                         "Failed to process the input with sdformat"
                     ) from e
