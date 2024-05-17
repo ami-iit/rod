@@ -21,39 +21,71 @@ Last but not least, the pose semantics also makes SDF aware of the concept of _f
 
 ## Features
 
-- Out-of-the-box support of SDFormat specifications [≥ 1.7][sdformat_spec_17]
-- Serialization and deserialization support of SDF files
-- In-memory layout based on `dataclasses`
-- Syntax highlighting and auto-completion
-- Support of programmatic creation of SDF files from Python APIs
-- Transitive support of URDF through conversion to SDF[^urdf_to_sdf]
-- Type validation of elements and attributes
-- Automatic check of missing required elements
-- Based on [`Fatal1ty/mashumaro`][mashumaro] for great serialization and deserialization performance
-- Support of exporting the in-memory model description to URDF
+- Out-of-the-box support for SDFormat specifications [≥ 1.10][sdformat_spec_110].
+- Serialization and deserialization support for SDF files.
+- In-memory layout based on `dataclasses`.
+- Syntax highlighting and auto-completion.
+- Programmatic creation of SDF files from Python APIs.
+- Transitive support for URDF through conversion to SDF.
+- Type validation of elements and attributes.
+- Automatic check of missing required elements.
+- High-performance serialization and deserialization using [`Fatal1ty/mashumaro`][mashumaro].
+- Export in-memory model description to URDF.
 
 [mashumaro]: https://github.com/Fatal1ty/mashumaro
 [open_robotics]: https://www.openrobotics.org/
 [pose_semantics]: http://sdformat.org/tutorials?tut=pose_frame_semantics_proposal&cat=pose_semantics_docs&
 [sdformat]: http://sdformat.org/
 [sdformat_python]: http://sdformat.org/tutorials?tut=python_bindings&cat=developers&
-[sdformat_repo]: https://github.com/gazebosim/sdformat
 [sdformat_spec]: http://sdformat.org/spec
-[sdformat_spec_17]: http://sdformat.org/spec?elem=sdf&ver=1.7
+[sdformat_spec_110]: http://sdformat.org/spec?elem=sdf&ver=1.10
 [urdf]: http://wiki.ros.org/urdf
 
-[^urdf_to_sdf]: Conversion can be done either using `ign sdf` included in Ignition Gazebo Fortress, or `gz sdf` included in Gazebo Sim starting from Garden.
+[^urdf_to_sdf]: Conversion can be done using the `gz sdf` command included in Gazebo Sim starting from Garden.
 
 ## Installation
 
-You can install the project with [`pypa/pip`][pip], preferably in a [virtual environment][venv]:
+> [!TIP]
+> ROD does not support out-of-the-box URDF files.
+> URDF support is obtained by converting URDF files to SDF using the `gz sdf` command provided by [sdformat][sdformat_repo] and [gz-tools][gz-tools_repo].
+> Ensure these tools are installed on your system if URDF support is needed (more information below).
+
+[sdformat_repo]: https://github.com/gazebosim/sdformat
+[gz-tools_repo]: https://github.com/gazebosim/gz-tools
+
+<details>
+<summary>Using conda (recommended)</summary>
+
+Installing ROD using `conda` is the recommended way to obtain a complete installation with out-of-the-box support for both URDF and SDF descriptions:
 
 ```bash
-pip install git+https://github.com/ami-iit/rod
+conda install rod -c conda-forge
 ```
 
+This will automatically install `sdformat` and `gz-tools`. 
+
+</details>
+
+<details>
+<summary>Using pip</summary>
+
+You can install ROD from PyPI with [`pypa/pip`][pip], preferably in a [virtual environment][venv]:
+
+```bash
+pip install rod[all]
+```
+
+If you need URDF support, follow the [official instructions][gazebo_sim_docs] to install Gazebo Sim on your operating system,
+making sure to obtain `sdformat ≥ 13.0` and `gz-tools ≥ 2.0`.
+
+You don't need to install the entire Gazebo Sim suite.
+For example, on Ubuntu, you can only install the `libsdformat13 gz-tools2` packages.
+
 [pip]: https://github.com/pypa/pip/
-[venv]: https://docs.python.org/3.8/tutorial/venv.html
+[venv]: https://docs.python.org/3.10/tutorial/venv.html
+[gazebo_sim_docs]: https://gazebosim.org/docs
+
+</details>
 
 ## Examples
 
@@ -164,10 +196,8 @@ print(sdf.serialize(pretty=True))
 
 from rod.urdf.exporter import UrdfExporter
 
-urdf_string = UrdfExporter.sdf_to_urdf_string(
-    sdf=sdf,
-    pretty=True,
-    gazebo_preserve_fixed_joints=True,
+urdf_string = UrdfExporter(pretty=True, gazebo_preserve_fixed_joints=True).to_urdf_string(
+    sdf=sdf
 )
 
 print(urdf_string)
