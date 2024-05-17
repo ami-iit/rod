@@ -94,7 +94,6 @@ jobs:
         if: matrix.type == 'conda'
         with:
           python-version: ${{ matrix.python }}
-          miniforge-variant: Mambaforge
           miniforge-version: latest
           channels: conda-forge
           channel-priority: true
@@ -113,7 +112,7 @@ jobs:
         if: matrix.type == 'conda'
         # Note: pytest-icdiff creates problems on macOS.
         run: |
-          mamba install -y \
+          conda install -y \
             coloredlogs \
             mashumaro \
             numpy \
