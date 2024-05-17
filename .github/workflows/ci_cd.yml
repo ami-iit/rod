@@ -150,11 +150,15 @@ jobs:
 
       - name: Import the package
         run: python -c "import rod"
+        env:
+          ROD_LOGGING_LEVEL: DEBUG
 
       - uses: actions/checkout@v3
 
       - name: Run tests
         run: pytest
+        env:
+          ROD_LOGGING_LEVEL: DEBUG
 
   publish:
     name: Publish to PyPI
