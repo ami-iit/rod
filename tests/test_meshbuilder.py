@@ -5,6 +5,7 @@ import trimesh
 
 from rod.builder.primitives import MeshBuilder
 
+
 def test_builder_creation():
 
     # Create a mesh of a box primitive.
@@ -74,10 +75,11 @@ def test_builder_creation_custom_mesh():
 
     assert builder.mesh.volume == mesh.volume, f"{builder.mesh.volume} != {mesh.volume}"
 
+
 def test_builder_empty_mesh():
     with tempfile.TemporaryDirectory() as tmp:
         with tempfile.NamedTemporaryFile(suffix=".stl", dir=tmp, delete=False) as fp:
-            
+
             builder = MeshBuilder(
                 name="test_mesh",
                 mesh_path=fp.name,

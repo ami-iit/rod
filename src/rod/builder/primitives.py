@@ -1,10 +1,10 @@
 import dataclasses
+import os
 import pathlib
 
 import trimesh
 from numpy.typing import NDArray
 
-import os
 import rod
 from rod.builder.primitive_builder import PrimitiveBuilder
 
@@ -80,7 +80,9 @@ class MeshBuilder(PrimitiveBuilder):
         if os.stat(self.mesh_path).st_size == 0:
             # File is empty
             self.is_empty = True
-            rod.logging.warning(f"Meshbuilder instantiated with empty mesh file {self.mesh_path}")
+            rod.logging.warning(
+                f"Meshbuilder instantiated with empty mesh file {self.mesh_path}"
+            )
 
         if isinstance(self.mesh_path, str):
             extension = pathlib.Path(self.mesh_path).suffix
