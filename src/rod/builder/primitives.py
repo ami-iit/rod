@@ -65,6 +65,7 @@ class CylinderBuilder(PrimitiveBuilder):
 class MeshBuilder(PrimitiveBuilder):
     mesh_path: str | pathlib.Path
     scale: NDArray
+    is_empty: bool = False
 
     def __post_init__(self) -> None:
         """
@@ -78,6 +79,7 @@ class MeshBuilder(PrimitiveBuilder):
 
         if os.stat(self.mesh_path).st_size == 0:
             # File is empty
+            self.is_empty = True
             rod.logging.warning(f"Meshbuilder instantiated with empty mesh file {self.mesh_path}")
 
         if isinstance(self.mesh_path, str):
