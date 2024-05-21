@@ -4,6 +4,7 @@ import pathlib
 import trimesh
 from numpy.typing import NDArray
 
+import os
 import rod
 from rod.builder.primitive_builder import PrimitiveBuilder
 
@@ -75,6 +76,10 @@ class MeshBuilder(PrimitiveBuilder):
             TypeError: If the mesh_path is not a str or pathlib.Path.
         """
 
+        if os.stat(self.mesh_path).st_size == 0:
+            # File is empty
+            rod.logging.warning(f"Meshbuilder instantiated with empty mesh file {self.mesh_path}")
+
         if isinstance(self.mesh_path, str):
             extension = pathlib.Path(self.mesh_path).suffix
         elif isinstance(self.mesh_path, pathlib.Path):
@@ -84,11 +89,11 @@ class MeshBuilder(PrimitiveBuilder):
                 f"Expected str or pathlib.Path for mesh_path, got {type(self.mesh_path)}"
             )
 
-        self.mesh: trimesh.base.Trimesh = trimesh.load(
-            str(self.mesh_path),
-            force="mesh",
-            file_type=extension,
-        )
+        with open(self.mesh_path, "rb") as f:
+            self.mesh: trimesh.base.Trimesh = trimesh.load_mesh(
+                file_obj=f,
+                file_type=extension,
+            )
 
         assert self.scale.shape == (
             3,
