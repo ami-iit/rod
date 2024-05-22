@@ -1,5 +1,4 @@
 import dataclasses
-import os
 import pathlib
 
 import trimesh
@@ -65,7 +64,6 @@ class CylinderBuilder(PrimitiveBuilder):
 class MeshBuilder(PrimitiveBuilder):
     mesh_path: str | pathlib.Path
     scale: NDArray
-    is_empty: bool = False
 
     def __post_init__(self) -> None:
         """

@@ -74,17 +74,3 @@ def test_builder_creation_custom_mesh():
     ), f"{builder.mesh.moment_inertia} != {mesh.moment_inertia}"
 
     assert builder.mesh.volume == mesh.volume, f"{builder.mesh.volume} != {mesh.volume}"
-
-
-def test_builder_empty_mesh():
-    with tempfile.TemporaryDirectory() as tmp:
-        with tempfile.NamedTemporaryFile(suffix=".stl", dir=tmp, delete=False) as fp:
-
-            builder = MeshBuilder(
-                name="test_mesh",
-                mesh_path=fp.name,
-                mass=1.0,
-                scale=np.array([1.0, 1.0, 1.0]),
-            )
-
-    assert builder.is_empty == True, f"builder.is_empty is {builder.is_empty} != True"
