@@ -1,10 +1,13 @@
 import dataclasses
 import pathlib
 
+import numpy as np
+import numpy.typing as npt
+import resolve_robotics_uri_py
 import trimesh
-from numpy.typing import NDArray
 
 import rod
+from rod import logging
 from rod.builder.primitive_builder import PrimitiveBuilder
 
 
@@ -62,8 +65,13 @@ class CylinderBuilder(PrimitiveBuilder):
 
 @dataclasses.dataclass
 class MeshBuilder(PrimitiveBuilder):
-    mesh_path: str | pathlib.Path
-    scale: NDArray
+
+    mesh_uri: str | pathlib.Path
+
+    scale: npt.NDArray = dataclasses.field(default_factory=lambda: np.ones(3))
+
+    mass: float | None = dataclasses.field(default=None, kw_only=True)
+    inertia_tensor: npt.NDArray | None = dataclasses.field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         """
@@ -74,34 +82,46 @@ class MeshBuilder(PrimitiveBuilder):
             AssertionError: If the scale is not a 3D vector.
             TypeError: If the mesh_path is not a str or pathlib.Path.
         """
+        # Adjust the shape of the scale.
+        self.scale = self.scale.squeeze()
 
-        mesh_path = (
-            self.mesh_path
-            if isinstance(self.mesh_path, pathlib.Path)
-            else pathlib.Path(self.mesh_path)
-        )
+        if self.scale.shape != (3,):
+            raise RuntimeError(f"Scale must be a 3D vector, got '{self.scale.shape}'")
 
-        if not mesh_path.is_file():
-            raise FileNotFoundError(f"Mesh file not found at {self.mesh_path}")
+        # Resolve the mesh URI.
+        mesh_path = resolve_robotics_uri_py.resolve_robotics_uri(uri=str(self.mesh_uri))
 
-        self.mesh: trimesh.base.Trimesh = trimesh.load_mesh(
-            file_obj=mesh_path,
-        )
+        # Build the trimesh object from the mesh path.
+        self.mesh: trimesh.base.Trimesh = trimesh.load_mesh(file_obj=mesh_path)
 
-        assert self.scale.shape == (
-            3,
-        ), f"Scale must be a 3D vector, got {self.scale.shape}"
+        # Populate the mass from the mesh if it was not provided externally.
+        if self.mass is None:
+
+            if self.mesh.is_watertight:
+                self.mass = self.mesh.mass
+
+            else:
+                msg = "Mesh '{}' is not watertight. Using a dummy mass value."
+                logging.warning(msg.format(self.mesh_uri))
+                self.mass = 1.0
+
+        # Populate the inertia tensor from the mesh if it was not provided externally.
+        if self.inertia_tensor is None:
+
+            if self.mesh.is_watertight:
+                self.inertia_tensor = self.mesh.moment_inertia
+
+            else:
+                msg = "Mesh '{}' is not watertight. Using a dummy inertia tensor."
+                logging.warning(msg.format(self.mesh_uri))
+                self.inertia_tensor = np.eye(3)
 
     def _inertia(self) -> rod.Inertia:
-        inertia = self.mesh.moment_inertia
-        return rod.Inertia(
-            ixx=inertia[0, 0],
-            ixy=inertia[0, 1],
-            ixz=inertia[0, 2],
-            iyy=inertia[1, 1],
-            iyz=inertia[1, 2],
-            izz=inertia[2, 2],
-        )
+
+        return rod.Inertia.from_inertia_tensor(inertia_tensor=self.inertia_tensor)
 
     def _geometry(self) -> rod.Geometry:
-        return rod.Geometry(mesh=rod.Mesh(uri=str(self.mesh_path), scale=self.scale))
+
+        return rod.Geometry(
+            mesh=rod.Mesh(uri=str(self.mesh_uri), scale=self.scale.tolist())
+        )
