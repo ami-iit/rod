@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import dataclasses
 
 import mashumaro
 import numpy as np
 import numpy.typing as npt
+
+from rod import logging
 
 from .collision import Collision
 from .common import Pose
@@ -12,6 +16,7 @@ from .visual import Visual
 
 @dataclasses.dataclass
 class Inertia(Element):
+
     ixx: float = dataclasses.field(
         default=1.0,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
@@ -41,6 +46,42 @@ class Inertia(Element):
         default=0.0,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
+
+    @staticmethod
+    def from_inertia_tensor(
+        inertia_tensor: npt.NDArray, validate: bool = True
+    ) -> Inertia:
+
+        inertia_tensor = inertia_tensor.squeeze()
+
+        if inertia_tensor.shape != (3, 3):
+            raise ValueError(f"Expected shape (3, 3), got {inertia_tensor.shape}")
+
+        # Extract the diagonal terms.
+        I1, I2, I3 = np.diag(inertia_tensor)
+
+        # Check if the inertia tensor meets the triangular inequality.
+        valid = True
+        valid = valid and I1 + I2 >= I3
+        valid = valid and I1 + I3 >= I2
+        valid = valid and I2 + I3 >= I1
+
+        if not valid:
+            msg = "Inertia tensor does not meet the triangular inequality"
+
+            if not validate:
+                logging.warning(msg)
+            else:
+                raise ValueError(msg)
+
+        return Inertia(
+            ixx=float(inertia_tensor[0, 0]),
+            ixy=float(inertia_tensor[0, 1]),
+            ixz=float(inertia_tensor[0, 2]),
+            iyy=float(inertia_tensor[1, 1]),
+            iyz=float(inertia_tensor[1, 2]),
+            izz=float(inertia_tensor[2, 2]),
+        )
 
     def matrix(self) -> npt.NDArray:
         return np.array(
