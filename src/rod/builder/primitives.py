@@ -75,19 +75,17 @@ class MeshBuilder(PrimitiveBuilder):
             TypeError: If the mesh_path is not a str or pathlib.Path.
         """
 
-        if isinstance(self.mesh_path, str):
-            extension = pathlib.Path(self.mesh_path).suffix
-        elif isinstance(self.mesh_path, pathlib.Path):
-            extension = self.mesh_path.suffix
-        else:
-            raise TypeError(
-                f"Expected str or pathlib.Path for mesh_path, got {type(self.mesh_path)}"
-            )
+        mesh_path = (
+            self.mesh_path
+            if isinstance(self.mesh_path, pathlib.Path)
+            else pathlib.Path(self.mesh_path)
+        )
 
-        self.mesh: trimesh.base.Trimesh = trimesh.load(
-            str(self.mesh_path),
-            force="mesh",
-            file_type=extension,
+        if not mesh_path.is_file():
+            raise FileNotFoundError(f"Mesh file not found at {self.mesh_path}")
+
+        self.mesh: trimesh.base.Trimesh = trimesh.load_mesh(
+            file_obj=mesh_path,
         )
 
         assert self.scale.shape == (
