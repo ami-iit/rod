@@ -1,6 +1,7 @@
 import tempfile
 
 import numpy as np
+import pytest
 import trimesh
 
 from rod.builder.primitives import MeshBuilder
@@ -20,10 +21,17 @@ def test_builder_creation():
 
             builder = MeshBuilder(
                 name="test_mesh",
-                mesh_path=fp.name,
+                mesh_uri=fp.name,
                 mass=1.0,
                 scale=np.array([1.0, 1.0, 1.0]),
             )
+
+    # Check that the builder can build a correct link.
+    # Note that the URI is not valid since it's a temporary file.
+    link = builder.build_link().add_inertial().add_visual().add_collision().build()
+    assert link.collision is not None
+    assert link.collision.geometry.mesh is not None
+    assert link.collision.geometry.mesh.scale == pytest.approx([1, 1, 1])
 
     assert (
         builder.mesh.vertices.shape == mesh.vertices.shape
@@ -56,7 +64,7 @@ def test_builder_creation_custom_mesh():
 
             builder = MeshBuilder(
                 name="test_mesh",
-                mesh_path=fp.name,
+                mesh_uri=fp.name,
                 mass=1.0,
                 scale=np.array([1.0, 1.0, 1.0]),
             )
