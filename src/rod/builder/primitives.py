@@ -74,7 +74,13 @@ class MeshBuilder(PrimitiveBuilder):
             AssertionError: If the scale is not a 3D vector.
             TypeError: If the mesh_path is not a str or pathlib.Path.
         """
-        mesh_path = pathlib.Path(self.mesh_path)
+
+        mesh_path = (
+            self.mesh_path
+            if isinstance(self.mesh_path, pathlib.Path)
+            else pathlib.Path(self.mesh_path)
+        )
+
         if not mesh_path.is_file():
             raise FileNotFoundError(f"Mesh file not found at {self.mesh_path}")
 
