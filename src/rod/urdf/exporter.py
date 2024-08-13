@@ -85,7 +85,7 @@ class UrdfExporter(abc.ABC):
             msg = f"Ignoring unsupported sub-models of model '{model.name}'"
             logging.warning(msg=msg)
 
-            model.models = None
+            model.model = None
 
         # Check that the model pose has no reference frame (implicit frame is world)
         if model.pose is not None and model.pose.relative_to not in {"", None}:
