@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import List, Optional
-
 import mashumaro
 
 import rod
@@ -18,51 +16,51 @@ from .link import Link
 class Model(Element):
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
-    canonical_link: Optional[str] = dataclasses.field(
+    canonical_link: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@canonical_link")
     )
 
-    placement_frame: Optional[str] = dataclasses.field(
+    placement_frame: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@placement_frame")
     )
 
-    static: Optional[bool] = dataclasses.field(
+    static: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    self_collide: Optional[bool] = dataclasses.field(
+    self_collide: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    allow_auto_disable: Optional[bool] = dataclasses.field(
+    allow_auto_disable: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    enable_wind: Optional[bool] = dataclasses.field(
+    enable_wind: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)
 
-    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
+    model: Model | list[Model] | None = dataclasses.field(default=None)
 
-    frame: Optional[Frame | List[Frame]] = dataclasses.field(default=None)
+    frame: Frame | list[Frame] | None = dataclasses.field(default=None)
 
-    link: Optional[Link | List[Link]] = dataclasses.field(default=None)
+    link: Link | list[Link] | None = dataclasses.field(default=None)
 
-    joint: Optional[Joint | List[Joint]] = dataclasses.field(default=None)
+    joint: Joint | list[Joint] | None = dataclasses.field(default=None)
 
     def is_fixed_base(self) -> bool:
         joints_having_world_parent = [j for j in self.joints() if j.parent == "world"]
@@ -82,7 +80,7 @@ class Model(Element):
 
         return self.links()[0].name
 
-    def models(self) -> List[Model]:
+    def models(self) -> list[Model]:
         if self.model is None:
             return []
 
@@ -92,7 +90,7 @@ class Model(Element):
         assert isinstance(self.model, list)
         return self.model
 
-    def frames(self) -> List[Frame]:
+    def frames(self) -> list[Frame]:
         if self.frame is None:
             return []
 
@@ -102,7 +100,7 @@ class Model(Element):
         assert isinstance(self.frame, list)
         return self.frame
 
-    def links(self) -> List[Link]:
+    def links(self) -> list[Link]:
         if self.link is None:
             return []
 
@@ -112,7 +110,7 @@ class Model(Element):
         assert isinstance(self.link, list), type(self.link)
         return self.link
 
-    def joints(self) -> List[Joint]:
+    def joints(self) -> list[Joint]:
         if self.joint is None:
             return []
 

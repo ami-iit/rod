@@ -1,7 +1,7 @@
 import abc
 import copy
 import dataclasses
-from typing import Any, ClassVar, Dict, List, Set
+from typing import Any, ClassVar, Set
 
 import numpy as np
 import xmltodict
@@ -24,7 +24,7 @@ class UrdfExporter(abc.ABC):
     # Whether to inject additional `<gazebo>` elements in the resulting URDF
     # to preserve fixed joints in case of re-loading into sdformat.
     # If a list of strings is passed, only the listed fixed joints will be preserved.
-    gazebo_preserve_fixed_joints: bool | List[str] = False
+    gazebo_preserve_fixed_joints: bool | list[str] = False
 
     SupportedSdfJointTypes: ClassVar[Set[str]] = {
         "revolute",
@@ -33,7 +33,7 @@ class UrdfExporter(abc.ABC):
         "fixed",
     }
 
-    DefaultMaterial: ClassVar[Dict[str, Any]] = {
+    DefaultMaterial: ClassVar[dict[str, Any]] = {
         "@name": "default_material",
         "color": {
             "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
@@ -45,7 +45,7 @@ class UrdfExporter(abc.ABC):
         sdf: rod.Sdf | rod.Model,
         pretty: bool = False,
         indent: str = "  ",
-        gazebo_preserve_fixed_joints: bool | List[str] = False,
+        gazebo_preserve_fixed_joints: bool | list[str] = False,
     ) -> str:
 
         msg = "This method is deprecated, please use '{}' instead."
@@ -145,8 +145,8 @@ class UrdfExporter(abc.ABC):
         )
 
         # Initialize the containers of extra links and joints
-        extra_links_from_frames: List[Dict[str, Any]] = []
-        extra_joints_from_frames: List[Dict[str, Any]] = []
+        extra_links_from_frames: list[dict[str, Any]] = []
+        extra_joints_from_frames: list[dict[str, Any]] = []
 
         # Since URDF does not support plain frames as SDF, we convert all frames
         # to (fixed_joint->dummy_link) sequences
@@ -418,7 +418,7 @@ class UrdfExporter(abc.ABC):
         )
 
     @staticmethod
-    def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> Dict[str, Any]:
+    def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> dict[str, Any]:
         return {
             **(
                 {"box": {"@size": " ".join(np.array(geometry.box.size, dtype=str))}}
@@ -453,7 +453,7 @@ class UrdfExporter(abc.ABC):
         }
 
     @staticmethod
-    def _rod_material_to_xmltodict(material: rod.Material) -> Dict[str, Any]:
+    def _rod_material_to_xmltodict(material: rod.Material) -> dict[str, Any]:
         if material.script is not None:
             msg = "Material scripts are not supported, returning default material"
             logging.info(msg=msg)

@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, List
+from typing import Any
 
 import mashumaro.config
 import mashumaro.mixins.dict
@@ -13,7 +13,7 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
     class Config(mashumaro.config.BaseConfig):
         serialize_by_alias = True
 
-    def __post_serialize__(self, d: Dict[Any, Any]) -> Dict[Any, Any]:
+    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         out = d.copy()
 
         for key, value in d.items():
@@ -45,12 +45,12 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
         return str(data)
 
     @staticmethod
-    def serialize_list(data: List[float]) -> str:
+    def serialize_list(data: list[float]) -> str:
         assert isinstance(data, list)
         return " ".join(np.array(data, dtype=str))
 
     @staticmethod
-    def deserialize_list(data: str, length: int | None = None) -> List[float]:
+    def deserialize_list(data: str, length: int | None = None) -> list[float]:
         assert isinstance(data, str)
         array = np.atleast_1d(np.array(data.split(sep=" "), dtype=float).squeeze())
 

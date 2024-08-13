@@ -1,6 +1,5 @@
 import os
 import pathlib
-from typing import List
 
 import resolve_robotics_uri_py
 
@@ -43,7 +42,7 @@ def resolve_geometry_uris(geometry: Geometry) -> None:
     geometry.mesh.uri = str(resolve_local_uri(uri=geometry.mesh.uri))
 
 
-def paths_from_environment_variable(variable_name: str) -> List[str]:
+def paths_from_environment_variable(variable_name: str) -> list[str]:
     if variable_name not in os.environ:
         return []
 

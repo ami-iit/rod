@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import abc
 import dataclasses
-from typing import ClassVar, List, Optional
+from typing import ClassVar
 
 import rod
 from rod import logging
 
 
 class TreeElement(abc.ABC):
-    index: Optional[int] = dataclasses.field(default=None, init=False)
+    index: int | None = dataclasses.field(default=None, init=False)
 
     @abc.abstractmethod
     def name(self) -> str:
@@ -31,10 +31,10 @@ class TreeElement(abc.ABC):
 
 @dataclasses.dataclass(eq=False)
 class DirectedTreeNode(TreeElement):
-    parent: Optional[DirectedTreeNode] = None
-    children: List[DirectedTreeNode] = dataclasses.field(default_factory=list)
+    parent: DirectedTreeNode | None = None
+    children: list[DirectedTreeNode] = dataclasses.field(default_factory=list)
 
-    _source: Optional[rod.Link] = dataclasses.field(default=None, repr=False)
+    _source: rod.Link | None = dataclasses.field(default=None, repr=False)
 
     def name(self) -> str:
         return self._source.name
@@ -69,7 +69,7 @@ class TreeEdge(TreeElement):
     child: DirectedTreeNode
     parent: DirectedTreeNode
 
-    _source: Optional[rod.Joint] = dataclasses.field(default=None, repr=False)
+    _source: rod.Joint | None = dataclasses.field(default=None, repr=False)
 
     def pose(self) -> rod.Pose:
         return self._source.pose
@@ -90,7 +90,7 @@ class TreeFrame(TreeElement):
     WORLD: ClassVar[str] = "world"
     MODEL: ClassVar[str] = "__model__"
 
-    _source: Optional[rod.Frame] = dataclasses.field(default=None, repr=False)
+    _source: rod.Frame | None = dataclasses.field(default=None, repr=False)
 
     def name(self) -> str:
         return self._source.name

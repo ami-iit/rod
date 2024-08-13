@@ -8,11 +8,11 @@ from .element import Element
 
 @dataclasses.dataclass
 class Physics(Element):
-    name: Optional[str] = dataclasses.field(
+    name: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@name")
     )
 
-    default: Optional[bool] = dataclasses.field(
+    default: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             alias="@default",

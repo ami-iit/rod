@@ -6,7 +6,7 @@ import tempfile
 
 
 class GazeboHelper:
-    _cached_executable: pathlib.Path = None
+    _cached_executable: pathlib.Path | None = None
 
     @classmethod
     def get_gazebo_executable(cls) -> pathlib.Path:

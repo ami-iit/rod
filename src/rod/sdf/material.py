@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List, Optional
 
 import mashumaro
 
@@ -14,16 +13,16 @@ class Script(Element):
 
 @dataclasses.dataclass
 class Material(Element):
-    script: Optional[Script] = dataclasses.field(default=None)
+    script: Script | None = dataclasses.field(default=None)
 
-    lightning: Optional[bool] = dataclasses.field(
+    lightning: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    ambient: Optional[List[float]] = dataclasses.field(
+    ambient: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -31,7 +30,7 @@ class Material(Element):
         ),
     )
 
-    diffuse: Optional[List[float]] = dataclasses.field(
+    diffuse: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -39,7 +38,7 @@ class Material(Element):
         ),
     )
 
-    specular: Optional[List[float]] = dataclasses.field(
+    specular: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -47,7 +46,7 @@ class Material(Element):
         ),
     )
 
-    emissive: Optional[List[float]] = dataclasses.field(
+    emissive: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,

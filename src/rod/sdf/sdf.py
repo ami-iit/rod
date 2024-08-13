@@ -3,7 +3,6 @@ from __future__ import annotations
 import dataclasses
 import os
 import pathlib
-from typing import List, Optional
 
 import mashumaro
 import packaging.specifiers
@@ -21,11 +20,11 @@ from .world import World
 class Sdf(Element):
     version: str = dataclasses.field(metadata=mashumaro.field_options(alias="@version"))
 
-    world: Optional[World | List[World]] = dataclasses.field(default=None)
+    world: World | list[World] | None = dataclasses.field(default=None)
 
-    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
+    model: Model | list[Model] | None = dataclasses.field(default=None)
 
-    def worlds(self) -> List[World]:
+    def worlds(self) -> list[World]:
         if self.world is None:
             return []
 
@@ -35,7 +34,7 @@ class Sdf(Element):
         assert isinstance(self.world, list), type(self.world)
         return self.world
 
-    def models(self) -> List[Model]:
+    def models(self) -> list[Model]:
         if self.model is None:
             return []
 
@@ -121,7 +120,7 @@ class Sdf(Element):
         return sdf
 
     def serialize(
-        self, pretty: bool = False, indent: str = "  ", validate: Optional[bool] = None
+        self, pretty: bool = False, indent: str = "  ", validate: bool | None = None
     ) -> str:
         # Automatically detect suitable Gazebo version
         validate = validate if validate is not None else GazeboHelper.has_gazebo()

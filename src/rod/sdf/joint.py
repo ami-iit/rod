@@ -74,5 +74,5 @@ class Joint(Element):
     parent: str
     child: str
 
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)
     axis: Optional[Axis] = dataclasses.field(default=None)

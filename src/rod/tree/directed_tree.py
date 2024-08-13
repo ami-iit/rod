@@ -1,7 +1,7 @@
 import collections.abc
 import dataclasses
 import functools
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Iterable
 
 from .tree_elements import DirectedTreeNode
 
@@ -23,11 +23,11 @@ class DirectedTree(collections.abc.Sequence):
             node.index = node_idx
 
     @functools.cached_property
-    def nodes(self) -> List[DirectedTreeNode]:
+    def nodes(self) -> list[DirectedTreeNode]:
         return list(iter(self))
 
     @functools.cached_property
-    def nodes_dict(self) -> Dict[str, DirectedTreeNode]:
+    def nodes_dict(self) -> dict[str, DirectedTreeNode]:
         return {node.name(): node for node in iter(self)}
 
     @staticmethod
@@ -70,7 +70,7 @@ class DirectedTree(collections.abc.Sequence):
 
     def __getitem__(
         self, key: int | slice | str
-    ) -> DirectedTreeNode | List[DirectedTreeNode]:
+    ) -> DirectedTreeNode | list[DirectedTreeNode]:
         # Get the nodes' dictionary (already inserted in order following BFS)
         nodes_dict = self.nodes_dict
 
