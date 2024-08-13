@@ -101,13 +101,13 @@ class Sdf(Element):
         try:
             xml_dict = xmltodict.parse(xml_input=sdf_string)
         except Exception as exc:
-            raise exc("Failed to parse 'sdf' argument")
+            raise exc("Failed to parse 'sdf' argument") from exc
 
         # Look for the top-level <sdf> element
         try:
             sdf_dict = xml_dict["sdf"]
-        except KeyError:
-            raise RuntimeError("Failed to find top-level '<sdf>' element")
+        except KeyError as exc:
+            raise RuntimeError("Failed to find top-level '<sdf>' element") from exc
 
         # Get the SDF version
         sdf = Sdf.from_dict(sdf_dict)
