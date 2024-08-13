@@ -8,7 +8,6 @@ import xmltodict
 
 import rod
 from rod import logging
-from rod.kinematics.tree_transforms import TreeTransforms
 
 
 @dataclasses.dataclass
@@ -135,14 +134,6 @@ class UrdfExporter(abc.ABC):
         # ============================================
         # Convert SDF frames to URDF equivalent chains
         # ============================================
-
-        # Tree transforms helper used to process SDF frame poses, if any.
-        # No need to switch frame convention to Urdf since it was already done above.
-        tree_transforms = (
-            TreeTransforms.build(model=model, is_top_level=True)
-            if len(model.frames()) is not None
-            else None
-        )
 
         # Initialize the containers of extra links and joints
         extra_links_from_frames: list[dict[str, Any]] = []
