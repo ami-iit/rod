@@ -243,12 +243,8 @@ class UrdfExporter(abc.ABC):
                         "@name": l.name,
                         "inertial": {
                             "origin": {
-                                "@xyz": " ".join(
-                                    np.array(l.inertial.pose.xyz, dtype=str)
-                                ),
-                                "@rpy": " ".join(
-                                    np.array(l.inertial.pose.rpy, dtype=str)
-                                ),
+                                "@xyz": " ".join(map(str, l.inertial.pose.xyz)),
+                                "@rpy": " ".join(map(str, l.inertial.pose.rpy)),
                             },
                             "mass": {"@value": l.inertial.mass},
                             "inertia": {
@@ -264,8 +260,8 @@ class UrdfExporter(abc.ABC):
                             {
                                 "@name": v.name,
                                 "origin": {
-                                    "@xyz": " ".join(np.array(v.pose.xyz, dtype=str)),
-                                    "@rpy": " ".join(np.array(v.pose.rpy, dtype=str)),
+                                    "@xyz": " ".join(map(str, v.pose.xyz)),
+                                    "@rpy": " ".join(map(str, v.pose.rpy)),
                                 },
                                 "geometry": UrdfExporter._rod_geometry_to_xmltodict(
                                     geometry=v.geometry
@@ -286,8 +282,8 @@ class UrdfExporter(abc.ABC):
                             {
                                 "@name": c.name,
                                 "origin": {
-                                    "@xyz": " ".join(np.array(c.pose.xyz, dtype=str)),
-                                    "@rpy": " ".join(np.array(c.pose.rpy, dtype=str)),
+                                    "@xyz": " ".join(map(str, c.pose.xyz)),
+                                    "@rpy": " ".join(map(str, c.pose.rpy)),
                                 },
                                 "geometry": UrdfExporter._rod_geometry_to_xmltodict(
                                     geometry=c.geometry
@@ -306,19 +302,13 @@ class UrdfExporter(abc.ABC):
                         "@name": j.name,
                         "@type": j.type,
                         "origin": {
-                            "@xyz": " ".join(np.array(j.pose.xyz, dtype=str)),
-                            "@rpy": " ".join(np.array(j.pose.rpy, dtype=str)),
+                            "@xyz": " ".join(map(str, j.pose.xyz)),
+                            "@rpy": " ".join(map(str, j.pose.rpy)),
                         },
                         "parent": {"@link": j.parent},
                         "child": {"@link": j.child},
                         **(
-                            {
-                                "axis": {
-                                    "@xyz": " ".join(
-                                        np.array(j.axis.xyz.xyz, dtype=str)
-                                    )
-                                }
-                            }
+                            {"axis": {"@xyz": " ".join(map(str, j.axis.xyz.xyz))}}
                             if j.axis is not None
                             and j.axis.xyz is not None
                             and j.type != "fixed"
@@ -435,7 +425,7 @@ class UrdfExporter(abc.ABC):
                 {
                     "mesh": {
                         "@filename": geometry.mesh.uri,
-                        "@scale": " ".join(np.array(geometry.mesh.scale, dtype=str)),
+                        "@scale": " ".join(map(str, geometry.mesh.scale)),
                     }
                 }
                 if geometry.mesh is not None
@@ -456,9 +446,9 @@ class UrdfExporter(abc.ABC):
             return UrdfExporter.DefaultMaterial
 
         return {
-            "@name": f"color_{hash(' '.join(np.array(material.diffuse, dtype=str)))}",
+            "@name": f"color_{hash(" ".join(map(str, material.diffuse)))}",
             "color": {
-                "@rgba": " ".join(np.array(material.diffuse, dtype=str)),
+                "@rgba": " ".join(map(str, material.diffuse)),
             },
             # "texture": {"@filename": None},  # TODO
         }
