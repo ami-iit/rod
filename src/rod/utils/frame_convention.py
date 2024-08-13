@@ -1,8 +1,6 @@
 import enum
 from collections import defaultdict
 
-import numpy as np
-
 import rod
 from rod import logging
 
