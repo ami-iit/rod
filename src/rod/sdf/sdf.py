@@ -128,12 +128,12 @@ class Sdf(Element):
         if validate:
             _ = GazeboHelper.process_model_description_with_sdformat(
                 model_description=xmltodict.unparse(
-                    input_dict=dict(sdf=self.to_dict()), pretty=True, indent="  "
+                    input_dict={"sdf": self.to_dict()}, pretty=True, indent="  "
                 )
             )
 
         return xmltodict.unparse(
-            input_dict=dict(sdf=self.to_dict()),
+            input_dict={"sdf": self.to_dict()},
             pretty=pretty,
             indent=indent,
             short_empty_elements=True,

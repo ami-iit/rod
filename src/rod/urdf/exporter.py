@@ -233,8 +233,8 @@ class UrdfExporter(abc.ABC):
         world_link = rod.Link(name="world")
 
         # Create a new dict in xmldict format with only the elements supported by URDF
-        urdf_dict = dict(
-            robot={
+        urdf_dict = {
+            "robot": {
                 **{"@name": model.name},
                 # http://wiki.ros.org/urdf/XML/link
                 "link": ([world_link.to_dict()] if model.is_fixed_base() else [])
@@ -277,7 +277,7 @@ class UrdfExporter(abc.ABC):
                                         )
                                     }
                                     if v.material is not None
-                                    else dict()
+                                    else {}
                                 ),
                             }
                             for v in l.visuals()
@@ -322,7 +322,7 @@ class UrdfExporter(abc.ABC):
                             if j.axis is not None
                             and j.axis.xyz is not None
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         # calibration: does not have any SDF corresponding element
                         **(
@@ -331,12 +331,12 @@ class UrdfExporter(abc.ABC):
                                     **(
                                         {"@damping": j.axis.dynamics.damping}
                                         if j.axis.dynamics.damping is not None
-                                        else dict()
+                                        else {}
                                     ),
                                     **(
                                         {"@friction": j.axis.dynamics.friction}
                                         if j.axis.dynamics.friction is not None
-                                        else dict()
+                                        else {}
                                     ),
                                 }
                             }
@@ -345,7 +345,7 @@ class UrdfExporter(abc.ABC):
                             and {j.axis.dynamics.damping, j.axis.dynamics.friction}
                             != {None}
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         **(
                             {
@@ -364,20 +364,20 @@ class UrdfExporter(abc.ABC):
                                         {"@lower": j.axis.limit.lower}
                                         if j.axis.limit.lower is not None
                                         and j.type in {"revolute", "prismatic"}
-                                        else dict()
+                                        else {}
                                     ),
                                     **(
                                         {"@upper": j.axis.limit.upper}
                                         if j.axis.limit.upper is not None
                                         and j.type in {"revolute", "prismatic"}
-                                        else dict()
+                                        else {}
                                     ),
                                 },
                             }
                             if j.axis is not None
                             and j.axis.limit is not None
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         # mimic: does not have any SDF corresponding element
                         # safety_controller: does not have any SDF corresponding element
@@ -399,7 +399,7 @@ class UrdfExporter(abc.ABC):
                     for fixed_joint in gazebo_preserve_fixed_joints
                 ],
             }
-        )
+        }
 
         return xmltodict.unparse(
             input_dict=urdf_dict,
@@ -414,7 +414,7 @@ class UrdfExporter(abc.ABC):
             **(
                 {"box": {"@size": " ".join(np.array(geometry.box.size, dtype=str))}}
                 if geometry.box is not None
-                else dict()
+                else {}
             ),
             **(
                 {
@@ -424,12 +424,12 @@ class UrdfExporter(abc.ABC):
                     }
                 }
                 if geometry.cylinder is not None
-                else dict()
+                else {}
             ),
             **(
                 {"sphere": {"@radius": geometry.sphere.radius}}
                 if geometry.sphere is not None
-                else dict()
+                else {}
             ),
             **(
                 {
@@ -439,7 +439,7 @@ class UrdfExporter(abc.ABC):
                     }
                 }
                 if geometry.mesh is not None
-                else dict()
+                else {}
             ),
         }
 

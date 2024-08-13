@@ -39,7 +39,7 @@ class DirectedTree(collections.abc.Sequence):
 
         # We assume that nodes have a unique name, and we mark a node as visited by
         # storing its name. This assumption speeds up considerably object comparison.
-        visited = list()
+        visited = []
         visited.append(root.name)
 
         yield root
