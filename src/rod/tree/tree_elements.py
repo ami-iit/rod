@@ -54,11 +54,11 @@ class DirectedTreeNode(TreeElement):
         )
 
     def __str__(self) -> str:
-        content_string = "name={}, index={}, parent={}, children={}".format(
-            self.name(),
-            self.index,
-            self.parent.name() if self.parent is not None else str(None),
-            [c.name() for c in self.children],
+        content_string = (
+            f"name={self.name()}, "
+            f"index={self.index}, "
+            f"parent={self.parent.name() if self.parent else "None"}, "
+            f"children=[{[c.name() for c in self.children]}]"
         )
 
         return f"{type(self).__name__}({content_string})"
@@ -78,9 +78,7 @@ class TreeEdge(TreeElement):
         return self._source.name
 
     def __str__(self) -> str:
-        content_string = "name={}, parent={}, child={}".format(
-            self.name(), self.parent, self.child
-        )
+        content_string = f"name={self.name()}, parent={self.parent}, child={self.child}"
 
         return f"{type(self).__name__}({content_string})"
 
@@ -102,8 +100,8 @@ class TreeFrame(TreeElement):
         return self._source.pose
 
     def __str__(self) -> str:
-        content_string = "name={}, index={}, attached_to={}".format(
-            self.name(), self.index, self.attached_to()
+        content_string = (
+            f"name={self.name()}, index={self.index}, attached_to={self.attached_to()}"
         )
 
         return f"{type(self).__name__}({content_string})"
