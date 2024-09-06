@@ -1,7 +1,7 @@
 import abc
 import dataclasses
 import numbers
-from typing import Any, List, Tuple
+from typing import Any
 
 
 class DataclassPrettyPrinter(abc.ABC):
@@ -9,7 +9,7 @@ class DataclassPrettyPrinter(abc.ABC):
         return DataclassPrettyPrinter.dataclass_to_str(obj=self, level=1)
 
     @staticmethod
-    def list_to_string(obj: List[Any], level: int = 1) -> str:
+    def list_to_string(obj: list[Any], level: int = 1) -> str:
         if not isinstance(obj, list):
             raise TypeError(obj, type(obj))
 
@@ -40,7 +40,7 @@ class DataclassPrettyPrinter(abc.ABC):
         if not dataclasses.is_dataclass(obj):
             raise TypeError(obj, type(obj))
 
-        serialization: List[Tuple[str, str]] = []
+        serialization: list[tuple[str, str]] = []
 
         for field in dataclasses.fields(obj):
             attr = getattr(obj, field.name)

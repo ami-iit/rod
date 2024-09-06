@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Optional
 
 import mashumaro
 
@@ -13,4 +12,4 @@ class Collision(Element):
     geometry: Geometry
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)

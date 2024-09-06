@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import dataclasses
-from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -272,7 +271,7 @@ class PrimitiveBuilder(abc.ABC):
 
     def _collision(
         self,
-        name: Optional[str],
+        name: str | None,
         pose: rod.Pose | None = None,
     ) -> rod.Collision:
         name = name if name is not None else f"{self.name}_collision"
@@ -294,11 +293,11 @@ class PrimitiveBuilder(abc.ABC):
 
     @staticmethod
     def build_pose(
-        pos: npt.NDArray = None,
-        rpy: npt.NDArray = None,
-        relative_to: str = None,
-        degrees: bool = None,
-        rotation_format: str = None,
+        pos: npt.NDArray | None = None,
+        rpy: npt.NDArray | None = None,
+        relative_to: str | None = None,
+        degrees: bool | None = None,
+        rotation_format: str | None = None,
     ) -> rod.Pose | None:
         if pos is None and rpy is None:
             return rod.Pose.from_transform(transform=np.eye(4), relative_to=relative_to)

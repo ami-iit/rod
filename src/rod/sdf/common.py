@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import mashumaro
 import numpy.typing as npt
@@ -9,7 +11,7 @@ from .element import Element
 
 @dataclasses.dataclass
 class Xyz(Element):
-    xyz: List[float] = dataclasses.field(
+    xyz: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             alias="#text",
@@ -18,12 +20,12 @@ class Xyz(Element):
         ),
     )
 
-    expressed_in: Optional[str] = dataclasses.field(
+    expressed_in: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@expressed_in")
     )
 
     @classmethod
-    def __pre_deserialize__(cls, d: Dict[Any, Any]) -> Dict[Any, Any]:
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
         if isinstance(d, str):
             d = {"#text": d, "@expressed_in": ""}
 
@@ -32,7 +34,7 @@ class Xyz(Element):
 
 @dataclasses.dataclass
 class Pose(Element):
-    pose: List[float] = dataclasses.field(
+    pose: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             alias="#text",
@@ -41,31 +43,31 @@ class Pose(Element):
         ),
     )
 
-    relative_to: Optional[str] = dataclasses.field(
+    relative_to: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@relative_to")
     )
 
-    degrees: Optional[bool] = dataclasses.field(
+    degrees: bool | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@degrees")
     )
 
-    rotation_format: Optional[str] = dataclasses.field(
+    rotation_format: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@rotation_format")
     )
 
     @classmethod
-    def __pre_deserialize__(cls, d: Dict[Any, Any]) -> Dict[Any, Any]:
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
         if isinstance(d, str):
             d = {"#text": d, "@relative_to": ""}
 
         return d
 
     @property
-    def xyz(self) -> List[float]:
+    def xyz(self) -> list[float]:
         return self.pose[0:3]
 
     @property
-    def rpy(self) -> List[float]:
+    def rpy(self) -> list[float]:
         return self.pose[3:6]
 
     def transform(self) -> npt.NDArray:
@@ -89,7 +91,7 @@ class Pose(Element):
         )
 
     @staticmethod
-    def from_transform(transform: npt.NDArray, relative_to: str = None) -> "Pose":
+    def from_transform(transform: npt.NDArray, relative_to: str | None = None) -> Pose:
         if transform.shape != (4, 4):
             raise ValueError(transform.shape)
 
@@ -105,8 +107,8 @@ class Pose(Element):
 class Frame(Element):
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
-    attached_to: Optional[str] = dataclasses.field(
+    attached_to: str | None = dataclasses.field(
         default=None, metadata=mashumaro.field_options(alias="@attached_to")
     )
 
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)

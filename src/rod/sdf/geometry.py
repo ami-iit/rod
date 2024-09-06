@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List, Optional
 
 import mashumaro
 
@@ -8,7 +7,7 @@ from .element import Element
 
 @dataclasses.dataclass
 class Box(Element):
-    size: List[float] = dataclasses.field(
+    size: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -41,7 +40,7 @@ class Cylinder(Element):
 
 @dataclasses.dataclass
 class Ellipsoid(Element):
-    radii: List[float] = dataclasses.field(
+    radii: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -54,7 +53,7 @@ class Ellipsoid(Element):
 class Heightmap(Element):
     uri: str
 
-    size: List[float] = dataclasses.field(
+    size: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             alias="#text",
@@ -63,7 +62,7 @@ class Heightmap(Element):
         ),
     )
 
-    pos: List[float] = dataclasses.field(
+    pos: list[float] = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             alias="#text",
@@ -77,7 +76,7 @@ class Heightmap(Element):
 class Mesh(Element):
     uri: str
 
-    scale: Optional[List[float]] = dataclasses.field(
+    scale: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -88,14 +87,14 @@ class Mesh(Element):
 
 @dataclasses.dataclass
 class Plane(Element):
-    normal: List[float] = dataclasses.field(
+    normal: list[float] = dataclasses.field(
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
             deserialize=lambda l: Element.deserialize_list(data=l, length=3),
         ),
     )
 
-    size: Optional[List[float]] = dataclasses.field(
+    size: list[float] | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -113,11 +112,11 @@ class Sphere(Element):
 
 @dataclasses.dataclass
 class Geometry(Element):
-    box: Optional[Box] = dataclasses.field(default=None)
-    capsule: Optional[Capsule] = dataclasses.field(default=None)
-    cylinder: Optional[Capsule] = dataclasses.field(default=None)
-    ellipsoid: Optional[Capsule] = dataclasses.field(default=None)
-    heightmap: Optional[Heightmap] = dataclasses.field(default=None)
-    mesh: Optional[Mesh] = dataclasses.field(default=None)
-    plane: Optional[Mesh] = dataclasses.field(default=None)
-    sphere: Optional[Sphere] = dataclasses.field(default=None)
+    box: Box | None = dataclasses.field(default=None)
+    capsule: Capsule | None = dataclasses.field(default=None)
+    cylinder: Capsule | None = dataclasses.field(default=None)
+    ellipsoid: Capsule | None = dataclasses.field(default=None)
+    heightmap: Heightmap | None = dataclasses.field(default=None)
+    mesh: Mesh | None = dataclasses.field(default=None)
+    plane: Mesh | None = dataclasses.field(default=None)
+    sphere: Sphere | None = dataclasses.field(default=None)

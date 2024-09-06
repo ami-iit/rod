@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List, Optional
 
 import mashumaro
 import numpy as np
@@ -61,58 +60,58 @@ class Inertial(Element):
 
     inertia: Inertia
 
-    name: Optional[str] = dataclasses.field(default=None)
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    name: str | None = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)
 
 
 @dataclasses.dataclass
 class Link(Element):
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
-    pose: Optional[Pose] = dataclasses.field(default=None)
+    pose: Pose | None = dataclasses.field(default=None)
 
-    inertial: Optional[Inertial] = dataclasses.field(default=None)
+    inertial: Inertial | None = dataclasses.field(default=None)
 
-    visual: Optional[Visual | List[Visual]] = dataclasses.field(default=None)
+    visual: Visual | list[Visual] | None = dataclasses.field(default=None)
 
-    collision: Optional[Collision | List[Collision]] = dataclasses.field(default=None)
+    collision: Collision | list[Collision] | None = dataclasses.field(default=None)
 
-    gravity: Optional[bool] = dataclasses.field(
+    gravity: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    enable_wind: Optional[bool] = dataclasses.field(
+    enable_wind: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    self_collide: Optional[bool] = dataclasses.field(
+    self_collide: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    kinematic: Optional[bool] = dataclasses.field(
+    kinematic: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    must_be_base_link: Optional[bool] = dataclasses.field(
+    must_be_base_link: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    def visuals(self) -> List[Visual]:
+    def visuals(self) -> list[Visual]:
         if self.visual is None:
             return []
 
@@ -122,7 +121,7 @@ class Link(Element):
         assert isinstance(self.visual, list), type(self.visual)
         return self.visual
 
-    def collisions(self) -> List[Collision]:
+    def collisions(self) -> list[Collision]:
         if self.collision is None:
             return []
 

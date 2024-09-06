@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import functools
-from typing import Dict, List, Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
 
@@ -16,8 +16,8 @@ from rod.tree import DirectedTree, DirectedTreeNode, TreeEdge, TreeFrame
 class KinematicTree(DirectedTree):
     model: rod.Model
 
-    joints: List[TreeEdge] = dataclasses.field(default_factory=list)
-    frames: List[TreeFrame] = dataclasses.field(default_factory=list)
+    joints: list[TreeEdge] = dataclasses.field(default_factory=list)
+    frames: list[TreeFrame] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
         # Initialize base class
@@ -38,13 +38,13 @@ class KinematicTree(DirectedTree):
         self.joints.sort(key=lambda j: j.index)
         self.frames.sort(key=lambda f: f.index)
 
-    def link_names(self) -> List[str]:
+    def link_names(self) -> list[str]:
         return [node.name() for node in self]
 
-    def frame_names(self) -> List[str]:
+    def frame_names(self) -> list[str]:
         return [frame.name() for frame in self.frames]
 
-    def joint_names(self) -> List[str]:
+    def joint_names(self) -> list[str]:
         return [joint.name() for joint in self.joints]
 
     @staticmethod
@@ -73,7 +73,7 @@ class KinematicTree(DirectedTree):
 
         # In our tree, links are the nodes and joints the edges.
         # Create a dict mapping link names to tree nodes, for easy retrieval.
-        nodes_links_dict: Dict[str, DirectedTreeNode] = {
+        nodes_links_dict: dict[str, DirectedTreeNode] = {
             # Add one node for each link of the model
             **{link.name: DirectedTreeNode(_source=link) for link in model.links()},
             # Add special world node, that will become a frame later
@@ -101,7 +101,7 @@ class KinematicTree(DirectedTree):
         # Furthermore, existing frames are extra elements that could be optionally
         # attached to the kinematic tree (but by default they're not part of it).
         # Create a dict mapping frame names to frame nodes, for easy retrieval.
-        nodes_frames_dict: Dict[str, TreeFrame] = {
+        nodes_frames_dict: dict[str, TreeFrame] = {
             # Add a frame node for each frame in the model
             **{frame.name: TreeFrame(_source=frame) for frame in model.frames()},
             # Add implicit frames used in the SDF specification (__model__).
@@ -249,7 +249,7 @@ class KinematicTree(DirectedTree):
     @staticmethod
     def remove_edge(
         edge: TreeEdge, keep_parent: bool = True
-    ) -> Tuple[DirectedTreeNode, Sequence[TreeFrame]]:
+    ) -> tuple[DirectedTreeNode, Sequence[TreeFrame]]:
         # Removed node: the node to remove.
         # Replaced node: the node removed and replaced with the new node.
         # New node: the new node that combines the removed and replaced nodes.
@@ -306,17 +306,17 @@ class KinematicTree(DirectedTree):
         raise NotImplementedError("Inertial parameters lumping")
 
     @functools.cached_property
-    def links_dict(self) -> Dict[str, DirectedTreeNode]:
+    def links_dict(self) -> dict[str, DirectedTreeNode]:
         return self.nodes_dict
 
     @functools.cached_property
-    def frames_dict(self) -> Dict[str, TreeFrame]:
+    def frames_dict(self) -> dict[str, TreeFrame]:
         return {frame.name(): frame for frame in self.frames}
 
     @functools.cached_property
-    def joints_dict(self) -> Dict[str, TreeEdge]:
+    def joints_dict(self) -> dict[str, TreeEdge]:
         return {joint.name(): joint for joint in self.joints}
 
     @functools.cached_property
-    def joints_connection_dict(self) -> Dict[Tuple[str, str], TreeEdge]:
+    def joints_connection_dict(self) -> dict[tuple[str, str], TreeEdge]:
         return {(j.parent.name(), j.child.name()): j for j in self.joints}

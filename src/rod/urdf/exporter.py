@@ -1,14 +1,13 @@
 import abc
 import copy
 import dataclasses
-from typing import Any, ClassVar, Dict, List, Set
+from typing import Any, ClassVar, Set
 
 import numpy as np
 import xmltodict
 
 import rod
 from rod import logging
-from rod.kinematics.tree_transforms import TreeTransforms
 
 
 @dataclasses.dataclass
@@ -24,7 +23,7 @@ class UrdfExporter(abc.ABC):
     # Whether to inject additional `<gazebo>` elements in the resulting URDF
     # to preserve fixed joints in case of re-loading into sdformat.
     # If a list of strings is passed, only the listed fixed joints will be preserved.
-    gazebo_preserve_fixed_joints: bool | List[str] = False
+    gazebo_preserve_fixed_joints: bool | list[str] = False
 
     SupportedSdfJointTypes: ClassVar[Set[str]] = {
         "revolute",
@@ -33,7 +32,7 @@ class UrdfExporter(abc.ABC):
         "fixed",
     }
 
-    DefaultMaterial: ClassVar[Dict[str, Any]] = {
+    DefaultMaterial: ClassVar[dict[str, Any]] = {
         "@name": "default_material",
         "color": {
             "@rgba": " ".join(np.array([1, 1, 1, 1], dtype=str)),
@@ -45,7 +44,7 @@ class UrdfExporter(abc.ABC):
         sdf: rod.Sdf | rod.Model,
         pretty: bool = False,
         indent: str = "  ",
-        gazebo_preserve_fixed_joints: bool | List[str] = False,
+        gazebo_preserve_fixed_joints: bool | list[str] = False,
     ) -> str:
 
         msg = "This method is deprecated, please use '{}' instead."
@@ -86,7 +85,7 @@ class UrdfExporter(abc.ABC):
             msg = f"Ignoring unsupported sub-models of model '{model.name}'"
             logging.warning(msg=msg)
 
-            model.models = None
+            model.model = None
 
         # Check that the model pose has no reference frame (implicit frame is world)
         if model.pose is not None and model.pose.relative_to not in {"", None}:
@@ -136,17 +135,9 @@ class UrdfExporter(abc.ABC):
         # Convert SDF frames to URDF equivalent chains
         # ============================================
 
-        # Tree transforms helper used to process SDF frame poses, if any.
-        # No need to switch frame convention to Urdf since it was already done above.
-        tree_transforms = (
-            TreeTransforms.build(model=model, is_top_level=True)
-            if len(model.frames()) is not None
-            else None
-        )
-
         # Initialize the containers of extra links and joints
-        extra_links_from_frames: List[Dict[str, Any]] = []
-        extra_joints_from_frames: List[Dict[str, Any]] = []
+        extra_links_from_frames: list[dict[str, Any]] = []
+        extra_joints_from_frames: list[dict[str, Any]] = []
 
         # Since URDF does not support plain frames as SDF, we convert all frames
         # to (fixed_joint->dummy_link) sequences
@@ -242,8 +233,8 @@ class UrdfExporter(abc.ABC):
         world_link = rod.Link(name="world")
 
         # Create a new dict in xmldict format with only the elements supported by URDF
-        urdf_dict = dict(
-            robot={
+        urdf_dict = {
+            "robot": {
                 **{"@name": model.name},
                 # http://wiki.ros.org/urdf/XML/link
                 "link": ([world_link.to_dict()] if model.is_fixed_base() else [])
@@ -252,12 +243,8 @@ class UrdfExporter(abc.ABC):
                         "@name": l.name,
                         "inertial": {
                             "origin": {
-                                "@xyz": " ".join(
-                                    np.array(l.inertial.pose.xyz, dtype=str)
-                                ),
-                                "@rpy": " ".join(
-                                    np.array(l.inertial.pose.rpy, dtype=str)
-                                ),
+                                "@xyz": " ".join(map(str, l.inertial.pose.xyz)),
+                                "@rpy": " ".join(map(str, l.inertial.pose.rpy)),
                             },
                             "mass": {"@value": l.inertial.mass},
                             "inertia": {
@@ -273,8 +260,8 @@ class UrdfExporter(abc.ABC):
                             {
                                 "@name": v.name,
                                 "origin": {
-                                    "@xyz": " ".join(np.array(v.pose.xyz, dtype=str)),
-                                    "@rpy": " ".join(np.array(v.pose.rpy, dtype=str)),
+                                    "@xyz": " ".join(map(str, v.pose.xyz)),
+                                    "@rpy": " ".join(map(str, v.pose.rpy)),
                                 },
                                 "geometry": UrdfExporter._rod_geometry_to_xmltodict(
                                     geometry=v.geometry
@@ -286,7 +273,7 @@ class UrdfExporter(abc.ABC):
                                         )
                                     }
                                     if v.material is not None
-                                    else dict()
+                                    else {}
                                 ),
                             }
                             for v in l.visuals()
@@ -295,8 +282,8 @@ class UrdfExporter(abc.ABC):
                             {
                                 "@name": c.name,
                                 "origin": {
-                                    "@xyz": " ".join(np.array(c.pose.xyz, dtype=str)),
-                                    "@rpy": " ".join(np.array(c.pose.rpy, dtype=str)),
+                                    "@xyz": " ".join(map(str, c.pose.xyz)),
+                                    "@rpy": " ".join(map(str, c.pose.rpy)),
                                 },
                                 "geometry": UrdfExporter._rod_geometry_to_xmltodict(
                                     geometry=c.geometry
@@ -315,23 +302,17 @@ class UrdfExporter(abc.ABC):
                         "@name": j.name,
                         "@type": j.type,
                         "origin": {
-                            "@xyz": " ".join(np.array(j.pose.xyz, dtype=str)),
-                            "@rpy": " ".join(np.array(j.pose.rpy, dtype=str)),
+                            "@xyz": " ".join(map(str, j.pose.xyz)),
+                            "@rpy": " ".join(map(str, j.pose.rpy)),
                         },
                         "parent": {"@link": j.parent},
                         "child": {"@link": j.child},
                         **(
-                            {
-                                "axis": {
-                                    "@xyz": " ".join(
-                                        np.array(j.axis.xyz.xyz, dtype=str)
-                                    )
-                                }
-                            }
+                            {"axis": {"@xyz": " ".join(map(str, j.axis.xyz.xyz))}}
                             if j.axis is not None
                             and j.axis.xyz is not None
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         # calibration: does not have any SDF corresponding element
                         **(
@@ -340,12 +321,12 @@ class UrdfExporter(abc.ABC):
                                     **(
                                         {"@damping": j.axis.dynamics.damping}
                                         if j.axis.dynamics.damping is not None
-                                        else dict()
+                                        else {}
                                     ),
                                     **(
                                         {"@friction": j.axis.dynamics.friction}
                                         if j.axis.dynamics.friction is not None
-                                        else dict()
+                                        else {}
                                     ),
                                 }
                             }
@@ -354,7 +335,7 @@ class UrdfExporter(abc.ABC):
                             and {j.axis.dynamics.damping, j.axis.dynamics.friction}
                             != {None}
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         **(
                             {
@@ -373,20 +354,20 @@ class UrdfExporter(abc.ABC):
                                         {"@lower": j.axis.limit.lower}
                                         if j.axis.limit.lower is not None
                                         and j.type in {"revolute", "prismatic"}
-                                        else dict()
+                                        else {}
                                     ),
                                     **(
                                         {"@upper": j.axis.limit.upper}
                                         if j.axis.limit.upper is not None
                                         and j.type in {"revolute", "prismatic"}
-                                        else dict()
+                                        else {}
                                     ),
                                 },
                             }
                             if j.axis is not None
                             and j.axis.limit is not None
                             and j.type != "fixed"
-                            else dict()
+                            else {}
                         ),
                         # mimic: does not have any SDF corresponding element
                         # safety_controller: does not have any SDF corresponding element
@@ -408,7 +389,7 @@ class UrdfExporter(abc.ABC):
                     for fixed_joint in gazebo_preserve_fixed_joints
                 ],
             }
-        )
+        }
 
         return xmltodict.unparse(
             input_dict=urdf_dict,
@@ -418,12 +399,12 @@ class UrdfExporter(abc.ABC):
         )
 
     @staticmethod
-    def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> Dict[str, Any]:
+    def _rod_geometry_to_xmltodict(geometry: rod.Geometry) -> dict[str, Any]:
         return {
             **(
                 {"box": {"@size": " ".join(np.array(geometry.box.size, dtype=str))}}
                 if geometry.box is not None
-                else dict()
+                else {}
             ),
             **(
                 {
@@ -433,27 +414,27 @@ class UrdfExporter(abc.ABC):
                     }
                 }
                 if geometry.cylinder is not None
-                else dict()
+                else {}
             ),
             **(
                 {"sphere": {"@radius": geometry.sphere.radius}}
                 if geometry.sphere is not None
-                else dict()
+                else {}
             ),
             **(
                 {
                     "mesh": {
                         "@filename": geometry.mesh.uri,
-                        "@scale": " ".join(np.array(geometry.mesh.scale, dtype=str)),
+                        "@scale": " ".join(map(str, geometry.mesh.scale)),
                     }
                 }
                 if geometry.mesh is not None
-                else dict()
+                else {}
             ),
         }
 
     @staticmethod
-    def _rod_material_to_xmltodict(material: rod.Material) -> Dict[str, Any]:
+    def _rod_material_to_xmltodict(material: rod.Material) -> dict[str, Any]:
         if material.script is not None:
             msg = "Material scripts are not supported, returning default material"
             logging.info(msg=msg)
@@ -465,9 +446,9 @@ class UrdfExporter(abc.ABC):
             return UrdfExporter.DefaultMaterial
 
         return {
-            "@name": f"color_{hash(' '.join(np.array(material.diffuse, dtype=str)))}",
+            "@name": f"color_{hash(" ".join(map(str, material.diffuse)))}",
             "color": {
-                "@rgba": " ".join(np.array(material.diffuse, dtype=str)),
+                "@rgba": " ".join(map(str, material.diffuse)),
             },
             # "texture": {"@filename": None},  # TODO
         }

@@ -3,7 +3,6 @@ from __future__ import annotations
 import dataclasses
 import os
 import pathlib
-from typing import List, Optional
 
 import mashumaro
 import packaging.specifiers
@@ -21,11 +20,11 @@ from .world import World
 class Sdf(Element):
     version: str = dataclasses.field(metadata=mashumaro.field_options(alias="@version"))
 
-    world: Optional[World | List[World]] = dataclasses.field(default=None)
+    world: World | list[World] | None = dataclasses.field(default=None)
 
-    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
+    model: Model | list[Model] | None = dataclasses.field(default=None)
 
-    def worlds(self) -> List[World]:
+    def worlds(self) -> list[World]:
         if self.world is None:
             return []
 
@@ -35,7 +34,7 @@ class Sdf(Element):
         assert isinstance(self.world, list), type(self.world)
         return self.world
 
-    def models(self) -> List[Model]:
+    def models(self) -> list[Model]:
         if self.model is None:
             return []
 
@@ -102,13 +101,13 @@ class Sdf(Element):
         try:
             xml_dict = xmltodict.parse(xml_input=sdf_string)
         except Exception as exc:
-            raise exc("Failed to parse 'sdf' argument")
+            raise exc("Failed to parse 'sdf' argument") from exc
 
         # Look for the top-level <sdf> element
         try:
             sdf_dict = xml_dict["sdf"]
-        except KeyError:
-            raise RuntimeError("Failed to find top-level '<sdf>' element")
+        except KeyError as exc:
+            raise RuntimeError("Failed to find top-level '<sdf>' element") from exc
 
         # Get the SDF version
         sdf = Sdf.from_dict(sdf_dict)
@@ -121,7 +120,7 @@ class Sdf(Element):
         return sdf
 
     def serialize(
-        self, pretty: bool = False, indent: str = "  ", validate: Optional[bool] = None
+        self, pretty: bool = False, indent: str = "  ", validate: bool | None = None
     ) -> str:
         # Automatically detect suitable Gazebo version
         validate = validate if validate is not None else GazeboHelper.has_gazebo()
@@ -129,12 +128,12 @@ class Sdf(Element):
         if validate:
             _ = GazeboHelper.process_model_description_with_sdformat(
                 model_description=xmltodict.unparse(
-                    input_dict=dict(sdf=self.to_dict()), pretty=True, indent="  "
+                    input_dict={"sdf": self.to_dict()}, pretty=True, indent="  "
                 )
             )
 
         return xmltodict.unparse(
-            input_dict=dict(sdf=self.to_dict()),
+            input_dict={"sdf": self.to_dict()},
             pretty=pretty,
             indent=indent,
             short_empty_elements=True,

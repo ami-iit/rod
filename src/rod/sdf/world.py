@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List, Optional
 
 import mashumaro
 
@@ -14,7 +13,7 @@ from .scene import Scene
 class World(Element):
     name: str = dataclasses.field(metadata=mashumaro.field_options(alias="@name"))
 
-    gravity: List[float] = dataclasses.field(
+    gravity: list[float] = dataclasses.field(
         default_factory=lambda: [0, 0, -9.8],
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -22,7 +21,7 @@ class World(Element):
         ),
     )
 
-    magnetic_field: List[float] = dataclasses.field(
+    magnetic_field: list[float] = dataclasses.field(
         default_factory=lambda: [6e-6, 2.3e-5, -4.2e-5],
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -34,11 +33,11 @@ class World(Element):
 
     scene: Scene = dataclasses.field(default_factory=Scene)
 
-    model: Optional[Model | List[Model]] = dataclasses.field(default=None)
+    model: Model | list[Model] | None = dataclasses.field(default=None)
 
-    frame: Optional[Frame | List[Frame]] = dataclasses.field(default=None)
+    frame: Frame | list[Frame] | None = dataclasses.field(default=None)
 
-    def models(self) -> List[Model]:
+    def models(self) -> list[Model]:
         if self.model is None:
             return []
 
@@ -48,7 +47,7 @@ class World(Element):
         assert isinstance(self.model, list)
         return self.model
 
-    def frames(self) -> List[Frame]:
+    def frames(self) -> list[Frame]:
         if self.frame is None:
             return []
 

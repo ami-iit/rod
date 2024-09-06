@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List, Optional
 
 import mashumaro
 
@@ -8,7 +7,7 @@ from .element import Element
 
 @dataclasses.dataclass
 class Scene(Element):
-    ambient: List[float] = dataclasses.field(
+    ambient: list[float] = dataclasses.field(
         default_factory=lambda: [0.4, 0.4, 0.4, 1],
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -16,7 +15,7 @@ class Scene(Element):
         ),
     )
 
-    background: List[float] = dataclasses.field(
+    background: list[float] = dataclasses.field(
         default_factory=lambda: [0.7, 0.7, 0.7, 1],
         metadata=mashumaro.field_options(
             serialize=Element.serialize_list,
@@ -31,14 +30,14 @@ class Scene(Element):
         ),
     )
 
-    grid: Optional[bool] = dataclasses.field(
+    grid: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
         ),
     )
 
-    origin_visual: Optional[bool] = dataclasses.field(
+    origin_visual: bool | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(
             serialize=Element.serialize_bool, deserialize=Element.deserialize_bool
