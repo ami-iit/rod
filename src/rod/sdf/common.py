@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from typing import Any
 
@@ -89,9 +91,7 @@ class Pose(Element):
         )
 
     @staticmethod
-    def from_transform(
-        transform: npt.NDArray, relative_to: str | None = None
-    ) -> "Pose":
+    def from_transform(transform: npt.NDArray, relative_to: str | None = None) -> Pose:
         if transform.shape != (4, 4):
             raise ValueError(transform.shape)
 

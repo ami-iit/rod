@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+
 import mashumaro
 
 import rod

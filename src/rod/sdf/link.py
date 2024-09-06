@@ -1,4 +1,5 @@
 import dataclasses
+
 import mashumaro
 import numpy as np
 import numpy.typing as npt
