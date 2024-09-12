@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import dataclasses
+from typing import ClassVar
 
 import mashumaro
 
@@ -112,11 +115,35 @@ class Sphere(Element):
 
 @dataclasses.dataclass
 class Geometry(Element):
+
+    GeometryType: ClassVar = (
+        Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere
+    )
+
     box: Box | None = dataclasses.field(default=None)
     capsule: Capsule | None = dataclasses.field(default=None)
-    cylinder: Capsule | None = dataclasses.field(default=None)
-    ellipsoid: Capsule | None = dataclasses.field(default=None)
+    cylinder: Cylinder | None = dataclasses.field(default=None)
+    ellipsoid: Ellipsoid | None = dataclasses.field(default=None)
     heightmap: Heightmap | None = dataclasses.field(default=None)
     mesh: Mesh | None = dataclasses.field(default=None)
-    plane: Mesh | None = dataclasses.field(default=None)
+    plane: Plane | None = dataclasses.field(default=None)
     sphere: Sphere | None = dataclasses.field(default=None)
+
+    def geometries(self) -> list[Geometry.GeometryType]:
+
+        return [
+            self.__getattribute__(field.name)
+            for field in dataclasses.fields(self)
+            if self.__getattribute__(field.name) is not None
+        ]
+
+    def geometry(self) -> Geometry.GeometryType | None:
+        """Return the actual geometry stored in the object"""
+
+        geometries = self.geometries()
+
+        if len(geometries) > 1:
+            msg = "More than one geometry found, returning the first one"
+            logging.warning(msg)
+
+        return geometries[0] if len(geometries) > 0 else None
