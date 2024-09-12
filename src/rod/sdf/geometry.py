@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import ClassVar
+import types
+from typing import ClassVar, Union
 
 import mashumaro
 
@@ -116,7 +117,7 @@ class Sphere(Element):
 @dataclasses.dataclass
 class Geometry(Element):
 
-    GeometryType: ClassVar = (
+    GeometryType: ClassVar[types.UnionType] = (
         Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere
     )
 
