@@ -57,7 +57,7 @@ class DirectedTreeNode(TreeElement):
         content_string = (
             f"name={self.name()}, "
             f"index={self.index}, "
-            f"parent={self.parent.name() if self.parent else "None"}, "
+            f"parent={self.parent.name() if self.parent else str(None)}, "
             f"children=[{[c.name() for c in self.children]}]"
         )
 
