@@ -446,7 +446,7 @@ class UrdfExporter(abc.ABC):
             return UrdfExporter.DefaultMaterial
 
         return {
-            "@name": f"color_{hash(" ".join(map(str, material.diffuse)))}",
+            "@name": f"color_{hash(' '.join(map(str, material.diffuse)))}",
             "color": {
                 "@rgba": " ".join(map(str, material.diffuse)),
             },
