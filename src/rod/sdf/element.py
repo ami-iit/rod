@@ -47,7 +47,7 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
     @staticmethod
     def serialize_list(data: list[float]) -> str:
         assert isinstance(data, list)
-        return " ".join(np.array(data, dtype=float).astype(str))
+        return " ".join(map(lambda element: str(float(element)), data))
 
     @staticmethod
     def deserialize_list(data: str, length: int | None = None) -> list[float]:

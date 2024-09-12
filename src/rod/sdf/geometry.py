@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import dataclasses
+from typing import ClassVar
 
 import mashumaro
 
@@ -112,6 +115,11 @@ class Sphere(Element):
 
 @dataclasses.dataclass
 class Geometry(Element):
+
+    GeometryType: ClassVar = (
+        Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere
+    )
+
     box: Box | None = dataclasses.field(default=None)
     capsule: Capsule | None = dataclasses.field(default=None)
     cylinder: Cylinder | None = dataclasses.field(default=None)
@@ -121,9 +129,7 @@ class Geometry(Element):
     plane: Plane | None = dataclasses.field(default=None)
     sphere: Sphere | None = dataclasses.field(default=None)
 
-    def geometries(
-        self,
-    ) -> list[Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere]:
+    def geometries(self) -> list[Geometry.GeometryType]:
 
         return [
             self.__getattribute__(field.name)
@@ -131,12 +137,8 @@ class Geometry(Element):
             if self.__getattribute__(field.name) is not None
         ]
 
-    def geometry(
-        self,
-    ) -> (
-        Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere | None
-    ):
-        """Return the actual shape of the geometry object"""
+    def geometry(self) -> Geometry.GeometryType | None:
+        """Return the actual geometry stored in the object"""
 
         geometries = self.geometries()
 
