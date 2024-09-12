@@ -120,3 +120,28 @@ class Geometry(Element):
     mesh: Mesh | None = dataclasses.field(default=None)
     plane: Plane | None = dataclasses.field(default=None)
     sphere: Sphere | None = dataclasses.field(default=None)
+
+    def geometries(
+        self,
+    ) -> list[Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere]:
+
+        return [
+            self.__getattribute__(field.name)
+            for field in dataclasses.fields(self)
+            if self.__getattribute__(field.name) is not None
+        ]
+
+    def geometry(
+        self,
+    ) -> (
+        Box | Capsule | Cylinder | Ellipsoid | Heightmap | Mesh | Plane | Sphere | None
+    ):
+        """Return the actual shape of the geometry object"""
+
+        geometries = self.geometries()
+
+        if len(geometries) > 1:
+            msg = "More than one geometry found, returning the first one"
+            logging.warning(msg)
+
+        return geometries[0] if len(geometries) > 0 else None
