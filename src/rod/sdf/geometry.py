@@ -114,9 +114,9 @@ class Sphere(Element):
 class Geometry(Element):
     box: Box | None = dataclasses.field(default=None)
     capsule: Capsule | None = dataclasses.field(default=None)
-    cylinder: Capsule | None = dataclasses.field(default=None)
-    ellipsoid: Capsule | None = dataclasses.field(default=None)
+    cylinder: Cylinder | None = dataclasses.field(default=None)
+    ellipsoid: Ellipsoid | None = dataclasses.field(default=None)
     heightmap: Heightmap | None = dataclasses.field(default=None)
     mesh: Mesh | None = dataclasses.field(default=None)
-    plane: Mesh | None = dataclasses.field(default=None)
+    plane: Plane | None = dataclasses.field(default=None)
     sphere: Sphere | None = dataclasses.field(default=None)
