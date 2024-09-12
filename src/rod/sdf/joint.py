@@ -9,12 +9,15 @@ from .element import Element
 
 @dataclasses.dataclass
 class Limit(Element):
-    lower: float = dataclasses.field(
-        metadata=mashumaro.field_options(serialize=Element.serialize_float)
+
+    lower: Optional[float] = dataclasses.field(
+        default=None,
+        metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    upper: float = dataclasses.field(
-        metadata=mashumaro.field_options(serialize=Element.serialize_float)
+    upper: Optional[float] = dataclasses.field(
+        default=None,
+        metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
     effort: Optional[float] = dataclasses.field(
