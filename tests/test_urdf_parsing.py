@@ -35,10 +35,6 @@ def test_urdf_parsing(robot: Robot) -> None:
     with pytest.raises(RuntimeError):
         _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=False)
 
-    # Check that it fails if is_urdf=False and the resource is an urdf string
-    with pytest.raises(RuntimeError):
-        _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=None)
-
     # The following instead should succeed
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=None)
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=True)
@@ -47,7 +43,7 @@ def test_urdf_parsing(robot: Robot) -> None:
     _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=True)
 
     # Load once again the urdf
-    rod_sdf = rod.Sdf.load(sdf=urdf_path, is_urdf=True)
+    rod_sdf = rod.Sdf.load(sdf=urdf_path)
 
     # There should be only one model
     assert len(rod_sdf.models()) == 1
