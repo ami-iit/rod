@@ -54,7 +54,7 @@ class Sdf(Element):
 
         Args:
             sdf: The SDF resource to load.
-            is_urdf: A boolean flag indicating whether the input is a URDF.
+            is_urdf: Force the SDF resource to be treated as URDF if the automatic detection fails.
 
         Returns:
             The parsed SDF file.
@@ -66,26 +66,28 @@ class Sdf(Element):
         except ValueError:
             MAX_PATH = os.pathconf("/", "PC_PATH_MAX")
 
-        # Get the SDF/URDF string from the input resource using match-case
-        match sdf:
-            # Case 1: It's a Path object
-            case pathlib.Path():
-                sdf_string = sdf.read_text()
-                is_urdf = sdf.suffix == ".urdf"
+        if is_urdf is not None:
+            sdf_string = sdf
+        else:
+            match sdf:
+                # Case 1: It's a Path object
+                case pathlib.Path():
+                    sdf_string = sdf.read_text()
+                    is_urdf = sdf.suffix == ".urdf"
 
-            # Case 2: It's a string with a path
-            case str() if len(sdf) <= MAX_PATH and pathlib.Path(sdf).is_file():
-                sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
-                is_urdf = pathlib.Path(sdf).suffix == ".urdf"
+                # Case 2: It's a string with a path
+                case str() if len(sdf) <= MAX_PATH and pathlib.Path(sdf).is_file():
+                    sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
+                    is_urdf = pathlib.Path(sdf).suffix == ".urdf"
 
-            # Case 3: It's an SDF/URDF string
-            case str():
-                sdf_string = sdf
-                is_urdf = "<robot>" in sdf_string
+                # Case 3: It's an SDF/URDF string
+                case str():
+                    sdf_string = sdf
+                    is_urdf = "<robot>" in sdf_string
 
-            # Case 4: Raise an error for unsupported types
-            case _:
-                raise TypeError(f"Unsupported type for 'sdf': {type(sdf)}")
+                # Case 4: Raise an error for unsupported types
+                case _:
+                    raise TypeError(f"Unsupported type for 'sdf': {type(sdf)}")
 
         # Convert SDF to URDF if needed (it requires system executables)
         if is_urdf:
