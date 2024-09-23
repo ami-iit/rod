@@ -83,7 +83,7 @@ class Sdf(Element):
                 # Case 3: It's an SDF/URDF string
                 case str():
                     sdf_string = sdf
-                    is_urdf = "<robot>" in sdf_string
+                    is_urdf = "<robot" in sdf_string
 
                 # Case 4: Raise an error for unsupported types
                 case _:
