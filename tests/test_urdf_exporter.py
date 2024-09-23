@@ -26,7 +26,7 @@ def test_urdf_exporter(robot: Robot) -> None:
     original_urdf_path = ModelFactory.get_model_description(robot=robot)
 
     # Load the URDF (it gets converted to SDF internally).
-    sdf = rod.Sdf.load(sdf=original_urdf_path, is_urdf=True)
+    sdf = rod.Sdf.load(sdf=original_urdf_path)
 
     # Export the URDF from the in-memory SDF-based description.
     exported_urdf_string = rod.urdf.exporter.UrdfExporter().to_urdf_string(sdf=sdf)

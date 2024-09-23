@@ -54,7 +54,7 @@ class Sdf(Element):
 
         Args:
             sdf: The SDF resource to load.
-            is_urdf: Marks the SDF resource as an URDF to convert.
+            is_urdf: Force the SDF resource to be treated as URDF if the automatic detection fails.
 
         Returns:
             The parsed SDF file.
@@ -66,29 +66,28 @@ class Sdf(Element):
         except ValueError:
             MAX_PATH = os.pathconf("/", "PC_PATH_MAX")
 
-        # Get the SDF/URDF string from the input resource.
-        # If is_urdf is None and the input resource is a file path, we try to guess
-        # the is_urdf flag checking the file extension.
-
-        # Check first if it's a Path object
-        if isinstance(sdf, pathlib.Path):
-            sdf_string = sdf.read_text()
-            is_urdf = is_urdf if is_urdf is not None else sdf.suffix == ".urdf"
-
-        # Then, check if it's a string with a path
-        elif (
-            isinstance(sdf, str)
-            and len(sdf) <= MAX_PATH
-            and pathlib.Path(sdf).is_file()
-        ):
-            sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
-            is_urdf = (
-                is_urdf if is_urdf is not None else pathlib.Path(sdf).suffix == ".urdf"
-            )
-
-        # Finally, it must be a SDF/URDF string
-        else:
+        if is_urdf is not None:
             sdf_string = sdf
+        else:
+            match sdf:
+                # Case 1: It's a Path object
+                case pathlib.Path():
+                    sdf_string = sdf.read_text()
+                    is_urdf = sdf.suffix == ".urdf"
+
+                # Case 2: It's a string with a path
+                case str() if len(sdf) <= MAX_PATH and pathlib.Path(sdf).is_file():
+                    sdf_string = pathlib.Path(sdf).read_text(encoding="utf-8")
+                    is_urdf = pathlib.Path(sdf).suffix == ".urdf"
+
+                # Case 3: It's an SDF/URDF string
+                case str():
+                    sdf_string = sdf
+                    is_urdf = "<robot>" in sdf_string
+
+                # Case 4: Raise an error for unsupported types
+                case _:
+                    raise TypeError(f"Unsupported type for 'sdf': {type(sdf)}")
 
         # Convert SDF to URDF if needed (it requires system executables)
         if is_urdf:
@@ -101,7 +100,7 @@ class Sdf(Element):
         try:
             xml_dict = xmltodict.parse(xml_input=sdf_string)
         except Exception as exc:
-            raise exc("Failed to parse 'sdf' argument") from exc
+            raise RuntimeError("Failed to parse 'sdf' argument") from exc
 
         # Look for the top-level <sdf> element
         try:
