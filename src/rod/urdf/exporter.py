@@ -1,7 +1,7 @@
 import abc
 import copy
 import dataclasses
-from typing import Any, ClassVar, Set
+from typing import Any, ClassVar
 
 import numpy as np
 import xmltodict
@@ -25,7 +25,7 @@ class UrdfExporter(abc.ABC):
     # If a list of strings is passed, only the listed fixed joints will be preserved.
     gazebo_preserve_fixed_joints: bool | list[str] = False
 
-    SupportedSdfJointTypes: ClassVar[Set[str]] = {
+    SupportedSdfJointTypes: ClassVar[set[str]] = {
         "revolute",
         "continuous",
         "prismatic",

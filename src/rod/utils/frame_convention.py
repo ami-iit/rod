@@ -312,7 +312,7 @@ def find_parent_link_of_frame(frame: rod.Frame, model: rod.Model) -> str:
             )
 
     # At this point, the parent is either a link or another frame.
-    assert isinstance(parent, (rod.Link, rod.Frame))
+    assert isinstance(parent, rod.Link | rod.Frame)
 
     match parent:
         # If the parent is a link, can stop searching.

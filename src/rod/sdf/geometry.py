@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import dataclasses
 import types
-from typing import ClassVar, Union
+from typing import ClassVar
 
 import mashumaro
+
+from rod import logging
 
 from .element import Element
 

@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Optional
 
 import mashumaro
 
@@ -39,7 +38,7 @@ class Physics(Element):
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    max_contacts: Optional[float] = dataclasses.field(
+    max_contacts: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
