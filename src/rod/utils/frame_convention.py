@@ -193,9 +193,7 @@ def switch_frame_convention(
     # Adjust the reference frames of all sub-models
     for sub_model in model.models():
         logging.info(
-            "Model composition not yet supported, ignoring '{}/{}'".format(
-                model.name, sub_model.name
-            )
+            f"Model composition not yet supported, ignoring '{model.name}/{sub_model.name}'"
         )
 
     # Adjust the reference frames of all joints
