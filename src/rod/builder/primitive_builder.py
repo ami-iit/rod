@@ -12,8 +12,9 @@ from rod import logging
 
 @dataclasses.dataclass
 class PrimitiveBuilder(abc.ABC):
-    name: str
-    mass: float
+
+    name: str = dataclasses.field(kw_only=True)
+    mass: float = dataclasses.field(kw_only=True)
 
     element: rod.Model | rod.Link | rod.Inertial | rod.Collision | rod.Visual = (
         dataclasses.field(
