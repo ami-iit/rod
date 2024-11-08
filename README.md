@@ -62,7 +62,7 @@ Installing ROD using `conda` is the recommended way to obtain a complete install
 conda install rod -c conda-forge
 ```
 
-This will automatically install `sdformat` and `gz-tools`. 
+This will automatically install `sdformat` and `gz-tools`.
 
 </details>
 
@@ -242,7 +242,7 @@ print(urdf_string)
 
 ## Contributing
 
-Pull requests are welcome. 
+Pull requests are welcome.
 For major changes, please open an issue first to discuss what you would like to change.
 
 ## Maintainers
