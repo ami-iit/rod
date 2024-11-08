@@ -45,9 +45,10 @@ jobs:
           python-version: "3.10"
 
       # Workaround for https://github.com/isort/isort-action/issues/70
-      - run: pip install colorama
+      - run: echo "colorama" >> /tmp/isort.requirements.txt
 
       - name: "📝 isort"
         uses: isort/isort-action@master
         with:
           configuration: --check --diff --color
+          requirements-files: /tmp/isort.requirements.txt
