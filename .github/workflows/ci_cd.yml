@@ -165,6 +165,8 @@ jobs:
     name: Publish to PyPI
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+        id-token: write
 
     steps:
 
@@ -184,6 +186,4 @@ jobs:
            (github.event_name == 'release' && github.event.action == 'published'))
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
