@@ -1,20 +1,122 @@
-[build-system]
-requires = [
-    "wheel",
-    "setuptools>=45",
-    "setuptools_scm[toml]>=6.2",
+[project]
+name = "rod"
+dynamic = ["version"]
+requires-python = ">= 3.10"
+description = "The ultimate Python tool for RObot Descriptions processing."
+authors = [
+    { name = "Diego Ferigo", email = "dgferigo@gmail.com" },
 ]
+maintainers = [
+    { name = "Filippo Luca Ferretti", email = "filippo.ferretti@iit.it" },
+    { name = "Carlotta Sartore", email = "carlotta.sartore@iit.it" },
+]
+license.file = "LICENSE"
+keywords = [
+    "description",
+    "gazebo",
+    "parser",
+    "robot",
+    "robotics",
+    "ros",
+    "sdf",
+    "sdformat",
+    "simulator",
+    "simulation",
+    "urdf",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Robot Framework",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Games/Entertainment :: Simulation",
+]
+dependencies = [
+    "coloredlogs",
+    "mashumaro",
+    "numpy",
+    "packaging",
+    "resolve-robotics-uri-py",
+    "scipy",
+    "trimesh",
+    "xmltodict",
+]
+
+[project.optional-dependencies]
+style = [
+    "black ~= 24.0",
+    "isort",
+]
+pptree = [
+    "pptree",
+]
+testing = [
+    "idyntree >= 12.2.1",
+    "pytest >=6.0",
+    "pytest-icdiff",
+    "robot-descriptions",
+]
+all = [
+    "rod[style,pptree,testing]",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Changelog = "https://github.com/ami-iit/rod/releases"
+Source = "https://github.com/ami-iit/rod"
+Tracker = "https://github.com/ami-iit/rod/issues"
+
+# ===========
+# Build tools
+# ===========
+
+[build-system]
 build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=64",
+    "setuptools-scm[toml]>=8",
+    "wheel",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
 
 [tool.setuptools_scm]
 local_scheme = "dirty-tag"
+
+# =================
+# Style and testing
+# =================
 
 [tool.black]
 line-length = 88
 
 [tool.isort]
-profile = "black"
 multi_line_output = 3
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-rsxX -v --strict-markers"
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
 
 [tool.cibuildwheel]
 build-frontend = "build"
