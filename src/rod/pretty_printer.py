@@ -13,7 +13,7 @@ class DataclassPrettyPrinter(abc.ABC):
         if not isinstance(obj, list):
             raise TypeError(obj, type(obj))
 
-        if all(isinstance(el, (numbers.Number, str)) for el in obj):
+        if all(isinstance(el, numbers.Number | str) for el in obj):
             return str(obj)
 
         spacing = " " * 4
