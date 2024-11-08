@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Optional
 
 import mashumaro
 
@@ -10,32 +9,32 @@ from .element import Element
 @dataclasses.dataclass
 class Limit(Element):
 
-    lower: Optional[float] = dataclasses.field(
+    lower: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    upper: Optional[float] = dataclasses.field(
+    upper: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    effort: Optional[float] = dataclasses.field(
+    effort: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    velocity: Optional[float] = dataclasses.field(
+    velocity: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    stiffness: Optional[float] = dataclasses.field(
+    stiffness: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    dissipation: Optional[float] = dataclasses.field(
+    dissipation: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -51,12 +50,12 @@ class Dynamics(Element):
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    damping: Optional[float] = dataclasses.field(
+    damping: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
 
-    friction: Optional[float] = dataclasses.field(
+    friction: float | None = dataclasses.field(
         default=None,
         metadata=mashumaro.field_options(serialize=Element.serialize_float),
     )
@@ -66,7 +65,7 @@ class Dynamics(Element):
 class Axis(Element):
     xyz: Xyz
     limit: Limit
-    dynamics: Optional[Dynamics] = dataclasses.field(default=None)
+    dynamics: Dynamics | None = dataclasses.field(default=None)
 
 
 @dataclasses.dataclass
@@ -78,4 +77,4 @@ class Joint(Element):
     child: str
 
     pose: Pose | None = dataclasses.field(default=None)
-    axis: Optional[Axis] = dataclasses.field(default=None)
+    axis: Axis | None = dataclasses.field(default=None)

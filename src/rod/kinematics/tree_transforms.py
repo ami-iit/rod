@@ -13,7 +13,9 @@ from rod.tree import TreeFrame
 
 @dataclasses.dataclass
 class TreeTransforms:
-    kinematic_tree: KinematicTree = dataclasses.dataclass(init=False)
+    kinematic_tree: KinematicTree = dataclasses.field(
+        default_factory=dataclasses.dataclass(init=False)
+    )
     _transform_cache: dict[str, npt.NDArray] = dataclasses.field(default_factory=dict)
 
     @staticmethod
