@@ -59,6 +59,7 @@ dependencies = [
 style = [
     "black ~= 24.0",
     "isort",
+    "pre-commit",
 ]
 pptree = [
     "pptree",
