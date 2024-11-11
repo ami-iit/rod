@@ -35,6 +35,11 @@ def test_urdf_parsing(robot: Robot) -> None:
     with pytest.raises(RuntimeError):
         _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=False)
 
+    # Check that it fails is is_urdf=True and the resource is a non-existing path
+    with pytest.raises(FileNotFoundError):
+        _ = rod.Sdf.load(sdf="/non/existing/path", is_urdf=None)
+        _ = rod.Sdf.load(sdf="/non/existing/path", is_urdf=False)
+
     # The following instead should succeed
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=None)
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=True)
