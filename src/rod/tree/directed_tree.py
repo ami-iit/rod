@@ -1,13 +1,13 @@
-import collections.abc
 import dataclasses
 import functools
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any
 
 from .tree_elements import DirectedTreeNode
 
 
 @dataclasses.dataclass(frozen=True)
-class DirectedTree(collections.abc.Sequence):
+class DirectedTree(Sequence):
     root: DirectedTreeNode
 
     def __post_init__(self):

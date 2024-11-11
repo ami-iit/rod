@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Optional
 
 import mashumaro
 
@@ -17,4 +16,4 @@ class Visual(Element):
 
     pose: Pose | None = dataclasses.field(default=None)
 
-    material: Optional[Material] = dataclasses.field(default=None)
+    material: Material | None = dataclasses.field(default=None)

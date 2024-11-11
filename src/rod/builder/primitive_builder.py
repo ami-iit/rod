@@ -121,7 +121,7 @@ class PrimitiveBuilder(abc.ABC):
         pose: rod.Pose | None = None,
         inertial: rod.Inertial | None = None,
     ) -> PrimitiveBuilder:
-        if not isinstance(self.element, (rod.Model, rod.Link)):
+        if not isinstance(self.element, rod.Model | rod.Link):
             raise ValueError(type(self.element))
 
         if isinstance(self.element, rod.Model):
@@ -151,7 +151,7 @@ class PrimitiveBuilder(abc.ABC):
         pose: rod.Pose | None = None,
         visual: rod.Visual | None = None,
     ) -> PrimitiveBuilder:
-        if not isinstance(self.element, (rod.Model, rod.Link)):
+        if not isinstance(self.element, rod.Model | rod.Link):
             raise ValueError(type(self.element))
 
         if isinstance(self.element, rod.Model):
@@ -187,7 +187,7 @@ class PrimitiveBuilder(abc.ABC):
         pose: rod.Pose | None = None,
         collision: rod.Collision | None = None,
     ) -> PrimitiveBuilder:
-        if not isinstance(self.element, (rod.Model, rod.Link)):
+        if not isinstance(self.element, rod.Model | rod.Link):
             raise ValueError(type(self.element))
 
         if isinstance(self.element, rod.Model):
