@@ -1,3 +1,5 @@
+import pathlib
+
 import pytest
 import robot_descriptions
 import robot_descriptions.loaders.idyntree
@@ -35,12 +37,32 @@ def test_urdf_parsing(robot: Robot) -> None:
     with pytest.raises(RuntimeError):
         _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=False)
 
+    # Check that it fails is is_urdf=True and the resource is a non-existing path
+    with pytest.raises(FileNotFoundError):
+        _ = rod.Sdf.load(sdf="/non/existing/path.sdf", is_urdf=False)
+
+    # Check that it fails is is_urdf=True and the resource is an empty string
+    with pytest.raises(FileNotFoundError):
+        _ = rod.Sdf.load(sdf=pathlib.Path("/non/existing/path.sdf"), is_urdf=False)
+
     # The following instead should succeed
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=None)
     _ = rod.Sdf.load(sdf=urdf_path, is_urdf=True)
     _ = rod.Sdf.load(sdf=str(urdf_path), is_urdf=None)
     _ = rod.Sdf.load(sdf=str(urdf_path), is_urdf=True)
     _ = rod.Sdf.load(sdf=urdf_path.read_text(), is_urdf=True)
+    _ = rod.Sdf.load(
+        sdf="<robot name='minimal_robot'> \
+                <link name='base_link'/> \
+                <joint name='base_to_link1' type='continuous'> \
+                    <parent link='base_link'/> \
+                    <child link='link1'/> \
+                    <origin xyz='0 0 1' rpy='0 0 0'/> \
+                </joint> \
+                <link name='link1'/> \
+                </robot> \
+    "
+    )
 
     # Load once again the urdf
     rod_sdf = rod.Sdf.load(sdf=urdf_path)
