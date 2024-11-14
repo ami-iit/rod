@@ -245,7 +245,16 @@ print(urdf_string)
 Pull requests are welcome.
 For major changes, please open an issue first to discuss what you would like to change.
 
-## Maintainers
+## People
+
+### Author
+
+| [<img src="https://github.com/diegoferigo.png" width="40">][df] | [@diegoferigo][df] |
+|:---------------------------------------------------------------:|:------------------:|
+
+[df]: https://github.com/diegoferigo
+
+### Maintainers
 
 | [<img src="https://github.com/flferretti.png" width="40">][ff] | [@flferretti][ff] | [<img src="https://github.com/CarlottaSartore.png" width="40">][cs] | [@CarlottaSartore][cs] |
 |:---------------------------------------------------------------:|:------------------:|:---------------------------------------------------------------:|:------------------:|
