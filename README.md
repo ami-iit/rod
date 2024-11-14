@@ -247,10 +247,13 @@ For major changes, please open an issue first to discuss what you would like to 
 
 ## Maintainers
 
-| [<img src="https://github.com/diegoferigo.png" width="40">][df] | [@diegoferigo][df] |
-|:---------------------------------------------------------------:|:------------------:|
+| [<img src="https://github.com/flferretti.png" width="40">][ff] | [@flferretti][ff] | [<img src="https://github.com/CarlottaSartore.png" width="40">][cs] | [@CarlottaSartore][cs] |
+|:---------------------------------------------------------------:|:------------------:|:---------------------------------------------------------------:|:------------------:|
 
-[df]: https://github.com/diegoferigo
+
+
+[ff]: https://github.com/flferretti
+[cs]: https://github.com/CarlottaSartore
 
 ## License
 
