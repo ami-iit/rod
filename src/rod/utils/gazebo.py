@@ -106,8 +106,7 @@ class GazeboHelper:
                 cp = subprocess.run(
                     [str(gazebo_executable), "sdf", "-p", fp.name],
                     text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    capture_output=True,
                     check=True,
                 )
             except subprocess.CalledProcessError as e:
