@@ -130,3 +130,7 @@ dmypy.json
 
 # IDE
 .idea
+
+# pixi environments
+.pixi
+*.egg-info
