@@ -196,4 +196,5 @@ pptree = { features = ["pptree"], solve-group = "default" }
 style = { features = ["style"], solve-group = "default" }
 testing = { features = ["testing"], solve-group = "default" }
 
-[tool.pixi.tasks]
+[tool.pixi.feature.testing.tasks]
+test = "pytest -vv"
