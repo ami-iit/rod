@@ -164,3 +164,19 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Ignore `E402` (import violations) in all `__init__.py` files
 "__init__.py" = ["F401", "F821"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+rod = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+all = { features = ["all", "style", "pptree", "testing"], solve-group = "default" }
+pptree = { features = ["pptree"], solve-group = "default" }
+style = { features = ["style"], solve-group = "default" }
+testing = { features = ["testing"], solve-group = "default" }
+
+[tool.pixi.tasks]
