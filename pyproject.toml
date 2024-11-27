@@ -165,9 +165,26 @@ ignore = [
 # Ignore `E402` (import violations) in all `__init__.py` files
 "__init__.py" = ["F401", "F821"]
 
+
+# ==================
+# Pixi configuration
+# ==================
+
 [tool.pixi.project]
 channels = ["conda-forge"]
 platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+resolve-robotics-uri-py = "*"
+trimesh = "*"
+xmltodict = "*"
+coloredlogs = "*"
+mashumaro = "*"
+gz-tools2 = "*"
+libsdformat13 = "*"
+numpy = "*"
+scipy = "*"
+packaging = "*"
 
 [tool.pixi.pypi-dependencies]
 rod = { path = ".", editable = true }
