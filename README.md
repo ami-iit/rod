@@ -67,6 +67,26 @@ This will automatically install `sdformat` and `gz-tools`.
 </details>
 
 <details>
+<summary>Using pixi</summary>
+
+[`pixi`](https://pixi.sh) definetly provides the quickest way to start using ROD. You can run the tests by executing:
+
+```bash
+pixi run test
+```
+
+or install the default dependencies with:
+
+```bash
+pixi install
+```
+
+check out the [pyproject.toml](./pyproject.toml) file for the list of all available features and read the [`pixi`](https://pixi.sh) documentation for more information.
+
+</details>
+
+
+<details>
 <summary>Using pip</summary>
 
 You can install ROD from PyPI with [`pypa/pip`][pip], preferably in a [virtual environment][venv]:
