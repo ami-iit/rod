@@ -252,6 +252,24 @@ print(urdf_string)
 
 </details>
 
+## Command Line Interface
+
+ROD provides a command line interface (CLI) for processing robot description files. You can use the CLI to display file attributes or convert files between URDF and SDF formats.
+
+### Usage
+
+- Display the attributes of an SDF file:
+
+```sh
+rod --file /path/to/file.sdf --show
+```
+
+- Convert an SDF file to URDF:
+
+```sh
+rod --file /path/to/file.sdf -o /path/to/file.urdf
+```
+
 ## Similar projects
 
 - https://github.com/gazebosim/sdformat
