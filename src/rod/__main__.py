@@ -59,7 +59,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    log_level = "DEBUG" if args.verbose else "INFO"
+    log_level = logging.DEBUG if args.verbose else logging.INFO
 
     logging.basicConfig(level=log_level)
 
@@ -67,7 +67,9 @@ def main() -> None:
 
     # Ensure file argument is provided if output or `show` is specified.
     if not args.file and (args.output or args.show):
-        parser.error("The following arguments are required: FILE.")
+        parser.error(
+            "The `--file` argument is required when using `--output` or `--show`."
+        )
 
     # Show the file attributes if no output file is specified.
     if args.file and not (args.output or args.show):
