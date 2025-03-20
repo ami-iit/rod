@@ -41,6 +41,8 @@ class Element(mashumaro.mixins.dict.DataClassDictMixin, DataclassPrettyPrinter):
 
     @staticmethod
     def serialize_float(data: float) -> str:
+        if isinstance(data, int):
+            data = float(data)
         assert isinstance(data, float)
         return str(data)
 
