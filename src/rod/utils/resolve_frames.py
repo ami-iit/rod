@@ -16,11 +16,13 @@ def update_element_with_pose(
 
     # If there are multiple defaults to detect (e.g. __model__ and <model_name>),
     # we select the first entry of the list as real default
-    default_relative_to = (
-        [default_relative_to]
-        if isinstance(default_relative_to, str)
-        else default_relative_to
-    )
+    if isinstance(default_relative_to, str):
+        default_relative_to = [default_relative_to]
+    elif not (
+        isinstance(default_relative_to, list)
+        and all(isinstance(x, str) for x in default_relative_to)
+    ):
+        raise TypeError("`default_relative_to must` be a string or a list of strings")
 
     if len(default_relative_to) < 1:
         raise ValueError(default_relative_to)
