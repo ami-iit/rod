@@ -97,8 +97,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           miniforge-version: latest
-          channels: conda-forge
           channel-priority: true
+          environment-file: environment.yml
+          auto-activate-base: false
 
       - name: Install system dependencies
         if: matrix.type == 'apt'
@@ -109,28 +110,6 @@ jobs:
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
           sudo apt-get update
           sudo apt-get install --no-install-recommends libsdformat13 gz-tools2
-
-      - name: Install conda dependencies
-        if: matrix.type == 'conda'
-        # Note: pytest-icdiff creates problems on macOS.
-        run: |
-          conda install -y \
-            coloredlogs \
-            mashumaro \
-            numpy \
-            packaging \
-            resolve-robotics-uri-py \
-            scipy \
-            trimesh \
-            xmltodict \
-            black \
-            isort \
-            pptree \
-            idyntree \
-            pytest \
-            robot_descriptions \
-            libgz-tools2 \
-            libsdformat13
 
       - name: Download Python packages
         uses: actions/download-artifact@v4
