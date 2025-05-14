@@ -1,0 +1,20 @@
+name: rod
+channels:
+  - conda-forge
+dependencies:
+  - coloredlogs
+  - mashumaro
+  - numpy
+  - packaging
+  - resolve-robotics-uri-py
+  - scipy
+  - trimesh
+  - xmltodict
+  - black
+  - isort
+  - pptree
+  - idyntree
+  - pytest
+  - robot_descriptions
+  - libgz-tools2
+  - libsdformat13
