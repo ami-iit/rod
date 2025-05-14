@@ -99,9 +99,11 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           miniforge-version: latest
-          channel-priority: true
+          channel-priority: strict
           environment-file: ./environment.yml
-          auto-activate-base: false
+          activate-environment: rod
+          conda-remove-defaults: "true"
+
 
       - name: Install system dependencies
         if: matrix.type == 'apt'
