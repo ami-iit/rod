@@ -18,6 +18,7 @@ import rod.urdf.exporter
         Robot.AtlasV4,
         Robot.Ergocub,
     ],
+    ids=lambda robot: robot.name,
 )
 def test_urdf_exporter(robot: Robot) -> None:
     """Test exporting URDF files."""
