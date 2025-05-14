@@ -92,13 +92,15 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
+      - uses: actions/checkout@v4
+
       - uses: conda-incubator/setup-miniconda@v3
         if: matrix.type == 'conda'
         with:
           python-version: ${{ matrix.python }}
           miniforge-version: latest
           channel-priority: true
-          environment-file: environment.yml
+          environment-file: ./environment.yml
           auto-activate-base: false
 
       - name: Install system dependencies
@@ -132,8 +134,6 @@ jobs:
         run: python -c "import rod"
         env:
           ROD_LOGGING_LEVEL: DEBUG
-
-      - uses: actions/checkout@v4
 
       - name: Run tests
         run: pytest
