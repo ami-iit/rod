@@ -64,7 +64,7 @@ class Dynamics(Element):
 @dataclasses.dataclass
 class Axis(Element):
     xyz: Xyz
-    limit: Limit
+    limit: Limit | None = dataclasses.field(default=None)
     dynamics: Dynamics | None = dataclasses.field(default=None)
 
 
