@@ -18,6 +18,7 @@ import rod
         Robot.AtlasV4,
         Robot.Ergocub,
     ],
+    ids=lambda robot: robot.name,
 )
 def test_urdf_parsing(robot: Robot) -> None:
     """Test parsing URDF files."""
