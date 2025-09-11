@@ -343,12 +343,20 @@ class UrdfExporter(abc.ABC):
                                     **(
                                         {"@effort": j.axis.limit.effort}
                                         if j.axis.limit.effort is not None
-                                        else {"@effort": np.finfo(np.float32).max}
+                                        else (
+                                            {"@effort": np.finfo(np.float32).max}
+                                            if j.type in {"revolute", "prismatic"}
+                                            else {}
+                                        )
                                     ),
                                     **(
                                         {"@velocity": j.axis.limit.velocity}
                                         if j.axis.limit.velocity is not None
-                                        else {"@velocity": np.finfo(np.float32).max}
+                                        else (
+                                            {"@velocity": np.finfo(np.float32).max}
+                                            if j.type in {"revolute", "prismatic"}
+                                            else {}
+                                        )
                                     ),
                                     **(
                                         {"@lower": j.axis.limit.lower}
