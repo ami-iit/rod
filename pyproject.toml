@@ -55,6 +55,9 @@ dependencies = [
     "xmltodict",
 ]
 
+[project.scripts]
+rod = "rod.__main__:main"
+
 [project.optional-dependencies]
 style = [
     "black ~= 24.0",
@@ -87,18 +90,19 @@ Tracker = "https://github.com/ami-iit/rod/issues"
 # ===========
 
 [build-system]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
 requires = [
-    "setuptools>=64",
-    "setuptools-scm[toml]>=8",
-    "wheel",
+    "hatchling", "hatch-vcs"
 ]
 
-[tool.setuptools]
-package-dir = { "" = "src" }
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools_scm]
-local_scheme = "dirty-tag"
+[tool.hatch.build.hooks.vcs]
+version-file = "src/rod/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rod"]
 
 # =================
 # Style and testing
