@@ -2,6 +2,7 @@ name: rod
 channels:
   - conda-forge
 dependencies:
+  # Core runtime dependencies
   - coloredlogs
   - mashumaro
   - numpy
@@ -10,11 +11,22 @@ dependencies:
   - scipy
   - trimesh
   - xmltodict
+
+  # Development and testing
   - black
   - isort
+  - pytest
+  - pytest-icdiff
+
+  # Optional dependencies
   - pptree
   - idyntree
-  - pytest
   - robot_descriptions
+
+  # Gazebo/SDF processing
   - libgz-tools2
   - libsdformat13
+
+  # Python packaging
+  - hatchling
+  - hatch-vcs
