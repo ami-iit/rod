@@ -46,14 +46,14 @@ def switch_frame_convention(
             # Compute the transform between the model and the frame.
             model_H_frame = (
                 kin.relative_transform(
-                    relative_to="__model__", name=frame.pose.relative_to
+                    from_frame="__model__", to_frame=frame.pose.relative_to
                 )
                 @ frame.pose.transform()
             )
 
             # Compute the transform between the parent link and the model.
             parent_link_H_model = kin.relative_transform(
-                relative_to=parent_link, name="__model__"
+                from_frame=parent_link, to_frame="__model__"
             )
 
             # Update the frame such that it is attached_to a link, populating the
@@ -181,8 +181,8 @@ def switch_frame_convention(
         if model.pose.relative_to != reference_frame_model:
             x_H_model = model.pose.transform()
             target_H_x = kin.relative_transform(
-                relative_to=reference_frame_model(m=model),
-                name=model.pose.relative_to,
+                from_frame=reference_frame_model(m=model),
+                to_frame=model.pose.relative_to,
             )
 
             model.pose = rod.Pose.from_transform(
@@ -200,8 +200,8 @@ def switch_frame_convention(
     for joint in model.joints():
         x_H_joint = joint.pose.transform()
         target_H_x = kin.relative_transform(
-            relative_to=reference_frame_joints(j=joint),
-            name=joint.pose.relative_to,
+            from_frame=reference_frame_joints(j=joint),
+            to_frame=joint.pose.relative_to,
         )
 
         joint.pose = rod.Pose.from_transform(
@@ -213,8 +213,8 @@ def switch_frame_convention(
     for frame in model.frames():
         x_H_frame = frame.pose.transform()
         target_H_x = kin.relative_transform(
-            relative_to=reference_frame_frames(f=frame),
-            name=frame.pose.relative_to,
+            from_frame=reference_frame_frames(f=frame),
+            to_frame=frame.pose.relative_to,
         )
 
         frame.pose = rod.Pose.from_transform(
@@ -233,8 +233,8 @@ def switch_frame_convention(
         # Link pose
         x_H_link = link.pose.transform()
         target_H_x = kin.relative_transform(
-            relative_to=relative_to,
-            name=link.pose.relative_to,
+            from_frame=relative_to,
+            to_frame=link.pose.relative_to,
         )
         link.pose = rod.Pose.from_transform(
             relative_to=relative_to,
@@ -244,8 +244,8 @@ def switch_frame_convention(
         # Inertial pose
         x_H_inertial = link.inertial.pose.transform()
         target_H_x = kin.relative_transform(
-            relative_to=reference_frame_inertials(i=link.inertial, parent_link=link),
-            name=link.inertial.pose.relative_to,
+            from_frame=reference_frame_inertials(i=link.inertial, parent_link=link),
+            to_frame=link.inertial.pose.relative_to,
         )
         link.inertial.pose = rod.Pose.from_transform(
             relative_to=reference_frame_inertials(i=link.inertial, parent_link=link),
@@ -256,8 +256,8 @@ def switch_frame_convention(
         for visual in link.visuals():
             x_H_visual = visual.pose.transform()
             target_H_x = kin.relative_transform(
-                relative_to=reference_frame_visuals(v=visual),
-                name=visual.pose.relative_to,
+                from_frame=reference_frame_visuals(v=visual),
+                to_frame=visual.pose.relative_to,
             )
 
             visual.pose = rod.Pose.from_transform(
@@ -269,8 +269,8 @@ def switch_frame_convention(
         for collision in link.collisions():
             x_H_collision = collision.pose.transform()
             target_H_x = kin.relative_transform(
-                relative_to=reference_frame_collisions(c=collision),
-                name=collision.pose.relative_to,
+                from_frame=reference_frame_collisions(c=collision),
+                to_frame=collision.pose.relative_to,
             )
 
             collision.pose = rod.Pose.from_transform(

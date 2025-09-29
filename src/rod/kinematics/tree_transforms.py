@@ -13,110 +13,105 @@ from rod.tree import TreeFrame
 
 @dataclasses.dataclass
 class TreeTransforms:
-    kinematic_tree: KinematicTree = dataclasses.field(
-        default_factory=dataclasses.dataclass(init=False)
-    )
-    _transform_cache: dict[str, npt.NDArray] = dataclasses.field(default_factory=dict)
+
+    kinematic_tree: KinematicTree
+    _cache: dict[str, npt.NDArray] = dataclasses.field(default_factory=dict, init=False)
+
+    @classmethod
+    def from_model(cls, model: rod.Model, is_top_level: bool = True) -> TreeTransforms:
+        return cls(KinematicTree.build(model=model, is_top_level=is_top_level))
 
     @staticmethod
-    def build(
-        model: rod.Model,
-        is_top_level: bool = True,
-    ) -> TreeTransforms:
+    def build(model: rod.Model, is_top_level: bool = True) -> TreeTransforms:
         model = copy.deepcopy(model)
-
-        # Make sure that all elements have a pose attribute with explicit 'relative_to'.
         model.resolve_frames(is_top_level=is_top_level, explicit_frames=True)
 
+        kinematic_tree = KinematicTree.build(model=model, is_top_level=is_top_level)
+
         # Build the kinematic tree and return the TreeTransforms object.
-        return TreeTransforms(
-            kinematic_tree=KinematicTree.build(model=model, is_top_level=is_top_level)
-        )
+        return TreeTransforms(kinematic_tree=kinematic_tree)
 
     def transform(self, name: str) -> npt.NDArray:
-        if name in self._transform_cache:
-            return self._transform_cache[name]
+        """Get world transform, computing and caching path to root as needed."""
+        if name in self._cache:
+            return self._cache[name]
 
-        self._transform_cache[name] = self._compute_transform(name=name)
-        return self._transform_cache[name]
+        # Build path from name to root, stopping at first cached element
+        path = []
+        current = name
+        while current and current not in self._cache:
+            path.append(current)
+            current = self._get_parent(current)
 
-    def _compute_transform(self, name: str) -> npt.NDArray:
-        match name:
-            case TreeFrame.WORLD:
+        # Compute transforms from root down
+        base_transform = self._cache.get(current, np.eye(4))
+        for element in reversed(path):
+            base_transform = base_transform @ self._get_local_transform(element)
+            self._cache[element] = base_transform
 
-                return np.eye(4)
+        return self._cache[name]
 
-            case name if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
+    def relative_transform(self, from_frame: str, to_frame: str) -> npt.NDArray:
+        """Transform from one frame to another."""
+        return self.inverse(self.transform(from_frame)) @ self.transform(to_frame)
 
-                relative_to = self.kinematic_tree.model.pose.relative_to
-                assert relative_to in {None, ""}, (relative_to, name)
-                return self.kinematic_tree.model.pose.transform()
+    def invalidate(self, name: str) -> None:
+        """Remove cached transform and all dependents."""
+        to_remove = {key for key in self._cache if self._depends_on(key, name)}
+        for key in to_remove:
+            del self._cache[key]
 
-            case name if name in self.kinematic_tree.joint_names():
+    def clear_cache(self) -> None:
+        self._cache.clear()
 
-                edge = self.kinematic_tree.joints_dict[name]
-                assert edge.name() == name
+    def _get_parent(self, name: str) -> str | None:
+        """Get parent frame for any element."""
+        if name == TreeFrame.WORLD:
+            return None
 
-                # Get the pose of the frame in which the node's pose is expressed
-                assert edge._source.pose.relative_to not in {"", None}
-                x_H_E = edge._source.pose.transform()
-                W_H_x = self.transform(name=edge._source.pose.relative_to)
+        if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
+            parent = self.kinematic_tree.model.pose.relative_to
+            return TreeFrame.WORLD if parent in {None, ""} else parent
 
-                # Compute the world-to-node transform
-                # TODO: this assumes all joint positions to be 0
-                W_H_E = W_H_x @ x_H_E
+        # Search through all element types
+        for element_dict in [
+            self.kinematic_tree.joints_dict,
+            self.kinematic_tree.links_dict,
+            self.kinematic_tree.frames_dict,
+        ]:
+            if name in element_dict:
+                parent = element_dict[name]._source.pose.relative_to
+                return TreeFrame.WORLD if parent in {"", None} else parent
 
-                return W_H_E
+        raise ValueError(f"Unknown element: {name}")
 
-            case name if name in self.kinematic_tree.link_names():
+    def _get_local_transform(self, name: str) -> npt.NDArray:
+        """Get local transform for any element."""
+        if name == TreeFrame.WORLD:
+            return np.eye(4)
 
-                element = self.kinematic_tree.links_dict[name]
+        if name in {TreeFrame.MODEL, self.kinematic_tree.model.name}:
+            return self.kinematic_tree.model.pose.transform()
 
-                assert element.name() == name
-                assert element._source.pose.relative_to not in {"", None}
+        # Search through all element types
+        for element_dict in [
+            self.kinematic_tree.joints_dict,
+            self.kinematic_tree.links_dict,
+            self.kinematic_tree.frames_dict,
+        ]:
+            if name in element_dict:
+                return element_dict[name]._source.pose.transform()
 
-                # Get the pose of the frame in which the link's pose is expressed.
-                x_H_L = element._source.pose.transform()
-                W_H_x = self.transform(name=element._source.pose.relative_to)
+        raise ValueError(f"Unknown element: {name}")
 
-                # Compute the world transform of the link.
-                W_H_L = W_H_x @ x_H_L
-                return W_H_L
-
-            case name if name in self.kinematic_tree.frame_names():
-
-                element = self.kinematic_tree.frames_dict[name]
-
-                assert element.name() == name
-                assert element._source.pose.relative_to not in {"", None}
-
-                # Get the pose of the frame in which the frame's pose is expressed.
-                x_H_F = element._source.pose.transform()
-                W_H_x = self.transform(name=element._source.pose.relative_to)
-
-                # Compute the world transform of the frame.
-                W_H_F = W_H_x @ x_H_F
-                return W_H_F
-
-            case _:
-                raise ValueError(name)
-
-    def relative_transform(self, relative_to: str, name: str) -> npt.NDArray:
-
-        world_H_name = self.transform(name=name)
-        world_H_relative_to = self.transform(name=relative_to)
-
-        return TreeTransforms.inverse(world_H_relative_to) @ world_H_name
+    def _depends_on(self, child: str, ancestor: str) -> bool:
+        """Check if child depends on ancestor in transform chain."""
+        current = child
+        while current and current != ancestor:
+            current = self._get_parent(current)
+        return current == ancestor
 
     @staticmethod
-    def inverse(transform: npt.NDArray) -> npt.NDArray:
-
-        R = transform[0:3, 0:3]
-        p = np.vstack(transform[0:3, 3])
-
-        return np.block(
-            [
-                [R.T, -R.T @ p],
-                [0, 0, 0, 1],
-            ]
-        )
+    def inverse(T: npt.NDArray) -> npt.NDArray:
+        R, p = T[:3, :3], T[:3, 3:4]
+        return np.block([[R.T, -R.T @ p], [np.zeros((1, 3)), np.ones((1, 1))]])
