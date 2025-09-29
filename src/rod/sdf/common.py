@@ -4,7 +4,9 @@ import dataclasses
 from typing import Any
 
 import mashumaro
+import numpy as np
 import numpy.typing as npt
+from scipy.spatial.transform import Rotation as R
 
 from .element import Element
 
@@ -71,8 +73,6 @@ class Pose(Element):
         return self.pose[3:6]
 
     def transform(self) -> npt.NDArray:
-        import numpy as np
-        from scipy.spatial.transform import Rotation as R
 
         # Transform Euler angles to DCM matrix.
         # The rpy sequence included in URDF and SDF implements the x-y-z Tait-Bryan
