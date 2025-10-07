@@ -69,7 +69,7 @@ This will automatically install `sdformat` and `gz-tools`.
 <details>
 <summary>Using pixi</summary>
 
-[`pixi`](https://pixi.sh) definetly provides the quickest way to start using ROD. You can run the tests by executing:
+[`pixi`](https://pixi.sh) definitely provides the quickest way to start using ROD. You can run the tests by executing:
 
 ```bash
 pixi run test

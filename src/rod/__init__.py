@@ -135,3 +135,8 @@ def check_compatible_sdformat(specification_version: str) -> None:
 
 check_compatible_sdformat(specification_version="1.10")
 del check_compatible_sdformat
+
+try:
+    from rod._version import __version__
+except ImportError:
+    __version__ = "unknown"

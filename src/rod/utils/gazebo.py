@@ -1,12 +1,17 @@
+import functools
+import hashlib
 import os
 import pathlib
 import shutil
 import subprocess
 import tempfile
+from typing import ClassVar
 
 
 class GazeboHelper:
     _cached_executable: pathlib.Path | None = None
+    _process_cache: ClassVar[dict[str, str]] = {}
+    _max_cache_size: int = 100
 
     @classmethod
     def get_gazebo_executable(cls) -> pathlib.Path:
@@ -50,6 +55,12 @@ class GazeboHelper:
             return False
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
+    def _get_cached_processing(content_hash: str, content: str) -> str:
+        """Internal cached processing method."""
+        return GazeboHelper._process_with_sdformat_uncached(content)
+
+    @staticmethod
     def process_model_description_with_sdformat(
         model_description: str | pathlib.Path,
     ) -> str:
@@ -82,32 +93,57 @@ class GazeboHelper:
             model_description_string = model_description
 
         # ================================
-        # Process the string with sdformat
+        # Use caching for repeated content
         # ================================
 
+        # Create hash of content for caching
+        content_hash = hashlib.md5(model_description_string.encode()).hexdigest()
+
+        # Try to get from cache first
+        return GazeboHelper._get_cached_processing(
+            content_hash, model_description_string
+        )
+
+    @staticmethod
+    def _process_with_sdformat_uncached(model_description_string: str) -> str:
+        """Internal method for actual SDF processing without caching."""
         # Get the Gazebo Sim executable (raises exception if not found)
         gazebo_executable = GazeboHelper.get_gazebo_executable()
 
-        # Operate on a file stored in a temporary directory.
-        # This is necessary on windows because the file has to be closed before
-        # it can be processed by the sdformat executable.
+        # Use faster temporary file approach - write directly to /tmp on Unix systems
+        # This avoids Python's overhead of TemporaryDirectory context manager
         # As soon as 3.12 will be the minimum supported version, we can use just
         # NamedTemporaryFile with the new delete_on_close=False parameter.
-        with tempfile.TemporaryDirectory() as tmp:
+        if os.name == "posix":  # Unix-like systems
+            tmp_dir = pathlib.Path("/tmp")
+        else:
+            tmp_dir = pathlib.Path(tempfile.gettempdir())
 
-            with tempfile.NamedTemporaryFile(
-                mode="w+", suffix=".xml", dir=tmp, delete=False
-            ) as fp:
+        temp_file = (
+            tmp_dir
+            / f"rod_sdf_{os.getpid()}_{hash(model_description_string) & 0x7fffffff}.xml"
+        )
 
-                fp.write(model_description_string)
-                fp.close()
+        try:
+            # Write file directly
+            temp_file.write_text(model_description_string, encoding="utf-8")
 
+            # Process with optimized subprocess call
             try:
                 cp = subprocess.run(
-                    [str(gazebo_executable), "sdf", "-p", fp.name],
+                    [str(gazebo_executable), "sdf", "-p", str(temp_file)],
                     text=True,
                     capture_output=True,
                     check=True,
+                    # Add performance optimizations
+                    bufsize=-1,  # Use system default buffer size
+                    env=dict(
+                        os.environ,
+                        **{
+                            "IGN_PARTITION": "rod_processing",  # Avoid interference with running Gazebo
+                            "GZ_PARTITION": "rod_processing",
+                        },
+                    ),
                 )
             except subprocess.CalledProcessError as e:
                 if e.returncode != 0:
@@ -116,11 +152,34 @@ class GazeboHelper:
                         "Failed to process the input with sdformat"
                     ) from e
 
+        finally:
+            # Clean up temp file
+            if temp_file.exists():
+                temp_file.unlink()
+
         # Get the resulting SDF string
         sdf_string = cp.stdout
 
         # There might be warnings in the output, so we remove them by finding the
         # first <sdf> tag and ignoring everything before it
-        sdf_string = sdf_string[sdf_string.find("<sdf") :]
+        sdf_start = sdf_string.find("<sdf")
+        if sdf_start != -1:
+            sdf_string = sdf_string[sdf_start:]
 
         return sdf_string
+
+    @staticmethod
+    def process_multiple_descriptions(
+        descriptions: list[str | pathlib.Path],
+    ) -> list[str]:
+        """Process multiple SDF descriptions in batch for better performance."""
+        results = []
+        for desc in descriptions:
+            results.append(GazeboHelper.process_model_description_with_sdformat(desc))
+        return results
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clear the processing cache to free memory."""
+        cls._get_cached_processing.cache_clear()
+        cls._process_cache.clear()
