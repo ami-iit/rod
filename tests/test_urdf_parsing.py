@@ -1,7 +1,6 @@
 import pathlib
 
 import pytest
-import robot_descriptions
 import robot_descriptions.loaders.idyntree
 from utils_models import ModelFactory, Robot
 
