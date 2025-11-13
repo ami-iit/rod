@@ -361,12 +361,14 @@ class UrdfExporter(abc.ABC):
                                     **(
                                         {"@lower": j.axis.limit.lower}
                                         if j.axis.limit.lower is not None
+                                        and not np.isinf(j.axis.limit.lower)
                                         and j.type in {"revolute", "prismatic"}
                                         else {}
                                     ),
                                     **(
                                         {"@upper": j.axis.limit.upper}
                                         if j.axis.limit.upper is not None
+                                        and not np.isinf(j.axis.limit.upper)
                                         and j.type in {"revolute", "prismatic"}
                                         else {}
                                     ),
