@@ -56,6 +56,125 @@ class UrdfExporter(abc.ABC):
             gazebo_preserve_fixed_joints=gazebo_preserve_fixed_joints,
         ).to_urdf_string(sdf=sdf)
 
+    @staticmethod
+    def _get_urdf_joint_type(joint: rod.Joint) -> str:
+        """
+        Get the URDF joint type, converting revolute joints with infinite limits to continuous.
+
+        sdformat converts URDF continuous joints to SDF revolute joints with infinite limits,
+        so we need to convert them back to continuous when exporting to URDF.
+        """
+        if (
+            joint.type == "revolute"
+            and joint.axis is not None
+            and joint.axis.limit is not None
+            and (joint.axis.limit.lower is None or np.isinf(joint.axis.limit.lower))
+            and (joint.axis.limit.upper is None or np.isinf(joint.axis.limit.upper))
+        ):
+            return "continuous"
+        return joint.type
+
+    @staticmethod
+    def _joint_to_urdf_dict(joint: rod.Joint) -> dict[str, Any]:
+        """
+        Convert a ROD joint to a URDF joint dictionary.
+
+        Args:
+            joint: The ROD joint to convert.
+
+        Returns:
+            A dictionary representing the joint in URDF format.
+        """
+        # Compute the corrected joint type once
+        urdf_joint_type = UrdfExporter._get_urdf_joint_type(joint)
+
+        return {
+            "@name": joint.name,
+            "@type": urdf_joint_type,
+            "origin": {
+                "@xyz": " ".join(map(str, joint.pose.xyz)),
+                "@rpy": " ".join(map(str, joint.pose.rpy)),
+            },
+            "parent": {"@link": joint.parent},
+            "child": {"@link": joint.child},
+            **(
+                {"axis": {"@xyz": " ".join(map(str, joint.axis.xyz.xyz))}}
+                if joint.axis is not None
+                and joint.axis.xyz is not None
+                and urdf_joint_type != "fixed"
+                else {}
+            ),
+            # calibration: does not have any SDF corresponding element
+            **(
+                {
+                    "dynamics": {
+                        **(
+                            {"@damping": joint.axis.dynamics.damping}
+                            if joint.axis.dynamics.damping is not None
+                            else {}
+                        ),
+                        **(
+                            {"@friction": joint.axis.dynamics.friction}
+                            if joint.axis.dynamics.friction is not None
+                            else {}
+                        ),
+                    }
+                }
+                if joint.axis is not None
+                and joint.axis.dynamics is not None
+                and {joint.axis.dynamics.damping, joint.axis.dynamics.friction}
+                != {None}
+                and urdf_joint_type != "fixed"
+                else {}
+            ),
+            **(
+                {
+                    "limit": {
+                        **(
+                            {"@effort": joint.axis.limit.effort}
+                            if joint.axis.limit.effort is not None
+                            else (
+                                {"@effort": np.finfo(np.float32).max}
+                                if urdf_joint_type
+                                in {"revolute", "prismatic", "continuous"}
+                                else {}
+                            )
+                        ),
+                        **(
+                            {"@velocity": joint.axis.limit.velocity}
+                            if joint.axis.limit.velocity is not None
+                            else (
+                                {"@velocity": np.finfo(np.float32).max}
+                                if urdf_joint_type
+                                in {"revolute", "prismatic", "continuous"}
+                                else {}
+                            )
+                        ),
+                        **(
+                            {"@lower": joint.axis.limit.lower}
+                            if joint.axis.limit.lower is not None
+                            and not np.isinf(joint.axis.limit.lower)
+                            and urdf_joint_type in {"revolute", "prismatic"}
+                            else {}
+                        ),
+                        **(
+                            {"@upper": joint.axis.limit.upper}
+                            if joint.axis.limit.upper is not None
+                            and not np.isinf(joint.axis.limit.upper)
+                            and urdf_joint_type in {"revolute", "prismatic"}
+                            else {}
+                        ),
+                    },
+                }
+                if joint.axis is not None
+                and joint.axis.limit is not None
+                and urdf_joint_type != "fixed"
+                else {}
+            ),
+            # mimic: does not have any SDF corresponding element
+            # safety_controller: does not have any SDF corresponding element
+        }
+
     def to_urdf_string(self, sdf: rod.Sdf | rod.Model) -> str:
         """
         Convert an in-memory SDF model to a URDF string.
@@ -298,90 +417,7 @@ class UrdfExporter(abc.ABC):
                 + extra_links_from_frames,
                 # http://wiki.ros.org/urdf/XML/joint
                 "joint": [
-                    {
-                        "@name": j.name,
-                        "@type": j.type,
-                        "origin": {
-                            "@xyz": " ".join(map(str, j.pose.xyz)),
-                            "@rpy": " ".join(map(str, j.pose.rpy)),
-                        },
-                        "parent": {"@link": j.parent},
-                        "child": {"@link": j.child},
-                        **(
-                            {"axis": {"@xyz": " ".join(map(str, j.axis.xyz.xyz))}}
-                            if j.axis is not None
-                            and j.axis.xyz is not None
-                            and j.type != "fixed"
-                            else {}
-                        ),
-                        # calibration: does not have any SDF corresponding element
-                        **(
-                            {
-                                "dynamics": {
-                                    **(
-                                        {"@damping": j.axis.dynamics.damping}
-                                        if j.axis.dynamics.damping is not None
-                                        else {}
-                                    ),
-                                    **(
-                                        {"@friction": j.axis.dynamics.friction}
-                                        if j.axis.dynamics.friction is not None
-                                        else {}
-                                    ),
-                                }
-                            }
-                            if j.axis is not None
-                            and j.axis.dynamics is not None
-                            and {j.axis.dynamics.damping, j.axis.dynamics.friction}
-                            != {None}
-                            and j.type != "fixed"
-                            else {}
-                        ),
-                        **(
-                            {
-                                "limit": {
-                                    **(
-                                        {"@effort": j.axis.limit.effort}
-                                        if j.axis.limit.effort is not None
-                                        else (
-                                            {"@effort": np.finfo(np.float32).max}
-                                            if j.type in {"revolute", "prismatic"}
-                                            else {}
-                                        )
-                                    ),
-                                    **(
-                                        {"@velocity": j.axis.limit.velocity}
-                                        if j.axis.limit.velocity is not None
-                                        else (
-                                            {"@velocity": np.finfo(np.float32).max}
-                                            if j.type in {"revolute", "prismatic"}
-                                            else {}
-                                        )
-                                    ),
-                                    **(
-                                        {"@lower": j.axis.limit.lower}
-                                        if j.axis.limit.lower is not None
-                                        and not np.isinf(j.axis.limit.lower)
-                                        and j.type in {"revolute", "prismatic"}
-                                        else {}
-                                    ),
-                                    **(
-                                        {"@upper": j.axis.limit.upper}
-                                        if j.axis.limit.upper is not None
-                                        and not np.isinf(j.axis.limit.upper)
-                                        and j.type in {"revolute", "prismatic"}
-                                        else {}
-                                    ),
-                                },
-                            }
-                            if j.axis is not None
-                            and j.axis.limit is not None
-                            and j.type != "fixed"
-                            else {}
-                        ),
-                        # mimic: does not have any SDF corresponding element
-                        # safety_controller: does not have any SDF corresponding element
-                    }
+                    UrdfExporter._joint_to_urdf_dict(j)
                     for j in model.joints()
                     if j.type in UrdfExporter.SupportedSdfJointTypes
                 ]
