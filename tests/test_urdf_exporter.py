@@ -124,3 +124,67 @@ def test_urdf_exporter(robot: Robot) -> None:
     )
 
     assert locked_inertia_exported == pytest.approx(locked_inertia_original, abs=1e-6)
+
+
+def test_continuous_joint_urdf_roundtrip() -> None:
+    """Test that continuous joints in URDF are preserved through SDF conversion."""
+    import xmltodict
+
+    # Create a URDF with a continuous joint
+    urdf_string = """<?xml version="1.0" encoding="utf-8"?>
+<robot name="test_continuous">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <link name="rotating_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="continuous_joint" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="rotating_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100.0" velocity="10.0"/>
+  </joint>
+</robot>
+"""
+
+    # Load the URDF (it gets converted to SDF internally by sdformat)
+    sdf = rod.Sdf.load(sdf=urdf_string, is_urdf=True)
+
+    # Export back to URDF
+    exporter = rod.urdf.exporter.UrdfExporter(pretty=True)
+    exported_urdf_string = exporter.to_urdf_string(sdf=sdf)
+
+    # Parse the exported URDF to check the joint properties
+    urdf_dict = xmltodict.parse(exported_urdf_string)
+    joint = urdf_dict["robot"]["joint"]
+
+    # Verify the joint type is continuous (not revolute)
+    assert (
+        joint["@type"] == "continuous"
+    ), f"Expected joint type 'continuous' after roundtrip, got '{joint['@type']}'"
+
+    # Verify NO upper/lower limits are present
+    assert (
+        "@upper" not in joint["limit"]
+    ), "Continuous joint should NOT have an upper position limit after roundtrip"
+    assert (
+        "@lower" not in joint["limit"]
+    ), "Continuous joint should NOT have a lower position limit after roundtrip"
+
+    # Verify effort and velocity limits are still present
+    assert (
+        "@effort" in joint["limit"]
+    ), "Continuous joint should still have an effort limit after roundtrip"
+    assert (
+        "@velocity" in joint["limit"]
+    ), "Continuous joint should still have a velocity limit after roundtrip"
